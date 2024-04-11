@@ -1,6 +1,8 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+mod com;
+mod shares;
+pub mod split;
+pub use com::Com; // TODO shouldn't be pub
+pub mod model;
 
 #[cfg(test)]
 mod tests {
