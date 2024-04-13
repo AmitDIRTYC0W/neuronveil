@@ -4,6 +4,7 @@ use std::io;
 use std::io::BufReader;
 
 use ndarray::{array, Array1};
+use log::{debug, info};
 use ring::rand::{SecureRandom, SystemRandom};
 use serde_json::json;
 use tokio::net::UdpSocket;
@@ -13,16 +14,17 @@ use neuronveil::split::Split;
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
+    info!("Initialising the CSPRNG");
     let system_random = SystemRandom::new();
     let mut random_buffer = [0u8; 4];
     system_random.fill(&mut random_buffer).unwrap();
 
+    info!("Reading the model");
     let file = File::open("identity.json")?;
     let reader = BufReader::new(file);
     let model: Model = serde_json::from_reader(reader)?;
 
-    println!("{:?}", model);
-    println!("{:?}", model.split(&system_random));
+    info!("Splitting the model into shares");
 
     let socket = UdpSocket::bind("0.0.0.0:1967").await?;
 
