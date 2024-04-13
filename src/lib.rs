@@ -1,8 +1,9 @@
 mod com;
-mod shares;
 pub mod split;
 pub use com::Com; // TODO shouldn't be pub
+pub mod message;
 pub mod model;
+pub mod server;
 
 #[cfg(test)]
 mod tests {

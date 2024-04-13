@@ -2,14 +2,8 @@ use ndarray::{Array1, Array2};
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
 
-use crate::shares::{DenseLayerShare, LayerShare, ModelShare};
 use crate::split::Split;
 use crate::Com;
-
-// #[derive(Deserialize, Debug)]
-// pub struct InputLayer {
-//     value: String,
-// }
 
 #[derive(Deserialize, Debug)]
 pub struct DenseLayer {
@@ -20,13 +14,18 @@ pub struct DenseLayer {
 #[derive(Deserialize, Debug)]
 #[serde(tag = "type")]
 pub enum Layer {
-    // InputLayer(InputLayer),
     DenseLayer(DenseLayer),
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Model {
     layers: Vec<Layer>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DenseLayerShare {
+    pub weights_share: Array2<Com>,
+    pub biases_share: Array1<Com>,
 }
 
 impl Split for DenseLayer {
@@ -49,6 +48,12 @@ impl Split for DenseLayer {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "type")]
+pub enum LayerShare {
+    DenseLayerShare(DenseLayerShare),
+}
+
 impl Split for Layer {
     type Splitted = LayerShare;
 
@@ -62,6 +67,17 @@ impl Split for Layer {
                 )
             }
         }
+    }
+}
+
+#[derive(Default, Serialize, Deserialize, Debug)]
+pub struct ModelShare {
+    pub layer_shares: Vec<LayerShare>,
+}
+
+impl Extend<LayerShare> for ModelShare {
+    fn extend<T: IntoIterator<Item = LayerShare>>(&mut self, iter: T) {
+        self.layer_shares.extend(iter)
     }
 }
 
