@@ -1,5 +1,6 @@
 use ndarray::{Array1, Array2};
 use serde::{Deserialize, Serialize};
+use tokio::sync::mpsc;
 
 use crate::model::ModelShare;
 use crate::Com;
@@ -18,3 +19,6 @@ pub enum Message {
     MultiplicationTripletShare(MultiplicationTripletShare),
     OutputShare(Array1<Com>),
 }
+
+// TODO replace mpsc::Receiver with a message multiplexing receiver
+pub(crate) type IO<'a> = (&'a mpsc::Sender<Message>, mpsc::Receiver<Message>);
