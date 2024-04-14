@@ -5,7 +5,7 @@ use crate::model::ModelShare;
 use crate::Com;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct MTInferenceShare {
+pub struct MultiplicationTripletShare {
     d_matrix: Array2<Com>,
     e_matrix: Array2<Com>,
 }
@@ -15,6 +15,6 @@ pub struct MTInferenceShare {
 pub enum Message {
     ModelShare(ModelShare),
     InputShare(Array1<Com>),
-    MTInferenceShare(MTInferenceShare),
+    MultiplicationTripletShare(MultiplicationTripletShare),
     OutputShare(Array1<Com>),
 }
