@@ -31,7 +31,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     debug!("Starting the server");
     let mut server = Server::builder()
         .with_tls((Path::new("cert.pem"), Path::new("key.pem")))?
-        .with_io("127.0.0.1:4433")?
+        .with_io("127.0.0.1:1967")?
         .start()?;
 
     while let Some(connection) = server.accept().await {
