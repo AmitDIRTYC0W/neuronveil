@@ -5,19 +5,19 @@ use serde::{Deserialize, Serialize};
 use crate::split::Split;
 use crate::Com;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct DenseLayer {
     weights: Array2<Com>,
     biases: Array1<Com>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum Layer {
     DenseLayer(DenseLayer),
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Model {
     layers: Vec<Layer>,
 }
