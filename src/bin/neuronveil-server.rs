@@ -1,18 +1,23 @@
-use std::{error::Error, path::Path, io::BufReader, fs::File, sync::Arc};
+use std::{error::Error, fs::File, io::BufReader, path::Path, sync::Arc};
 
 use flexi_logger;
-use s2n_quic::{Server, connection::Connection};
 use log::{debug, info, warn};
 use ring::rand::{SecureRandom, SystemRandom};
+use s2n_quic::provider::tls::TryInto;
+use s2n_quic::{connection::Connection, Server};
 use tokio::sync::mpsc;
 
+use neuronveil::message::Message;
 use neuronveil::model::Model;
 use neuronveil::split::Split;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // Start the logger
-    flexi_logger::Logger::try_with_env().unwrap().start().unwrap();
+    flexi_logger::Logger::try_with_env()
+        .unwrap()
+        .start()
+        .unwrap();
 
     debug!("Initialising the CSPRNG");
     let system_random = Arc::new(SystemRandom::new());
@@ -31,35 +36,60 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .start()?;
 
     while let Some(mut connection) = server.accept().await {
-        tokio::spawn(handle_connection(connection, model.clone(), Arc::clone(&system_random)));
+        tokio::spawn(handle_connection(
+            connection,
+            model.clone(),
+            Arc::clone(&system_random),
+        ));
     }
 
     Ok(())
 }
 
-async fn handle_connection(mut connection: Connection, model: Model, system_random: Arc<SystemRandom>) {
-    // run in parallel:
-    // connection.accept_receive_stream
-    // sending loop
-
+async fn handle_connection(
+    mut connection: Connection,
+    model: Model,
+    system_random: Arc<SystemRandom>,
+) {
     debug!("New connection from {}", connection.remote_addr().unwrap());
 
-    let (outcoming_sender, mut outcoming_receiver) = mpsc::channel(1024); // TODO 1024 is a magic number
-    let (incoming_sender, mut incoming_receiver) = mpsc::channel(1024); // TODO 1024 is a magic number
+    let (mut connection_handle, mut stream_acceptor) = connection.split();
 
     // Prepare for listening
+    let (incoming_sender, mut incoming_receiver) = mpsc::channel(1024); // TODO 1024 is a magic number
+
     tokio::spawn(async move {
-        while let Ok(Some(mut stream)) = connection.accept_receive_stream().await {
-            debug!("Accepted a new stream");
-            while let Ok(Some(data)) = stream.receive().await {
-                debug!("Received some data");
-            }
+        while let Ok(Some(mut stream)) = stream_acceptor.accept_receive_stream().await {
+            // Fully receive the message
+            let mut buffer: Vec<u8> = vec![];
+            tokio::io::copy(&mut stream, &mut buffer).await.unwrap();
+
+            // Parse it
+            let message: Message = serde_json::from_slice(&buffer).unwrap();
+            debug!("Received a message: {:?}", message);
+
+            // Process it
+            incoming_sender.send(message).await.unwrap();
         }
     });
 
     // Prepare for sending
-    // todo!();
-    // TODO
+    let (outcoming_sender, mut outcoming_receiver): (
+        mpsc::Sender<Message>,
+        mpsc::Receiver<Message>,
+    ) = mpsc::channel(1024); // TODO 1024 is a magic number
+
+    tokio::spawn(async move {
+        while let Some(message) = outcoming_receiver.recv().await {
+            let mut stream = connection_handle.open_send_stream().await.unwrap(); // TODO handle errors!
+
+            let buffer = serde_json::to_vec(&message).unwrap().try_into().unwrap();
+            debug!("Attempting to send a message!");
+
+            stream.send(buffer).await.expect("stream should be open");
+            stream.close().await.unwrap();
+        }
+    });
 
     // Split the model into shares
     // TODO This should be done in advance
@@ -67,17 +97,7 @@ async fn handle_connection(mut connection: Connection, model: Model, system_rand
 
     // Start infering
     debug!("Starting the inference");
-    neuronveil::server::infer((&outcoming_sender, incoming_receiver), model_shares).await.unwrap(); // TODO add ?
-
-    // while let Ok(Some(mut stream)) = connection.accept_bidirectional_stream().await {
-    //     // spawn a new task for the stream
-    //     debug!("Accepting a new stream");
-    //     tokio::spawn(async move {
-    //         // echo any data back to the stream
-    //         while let Ok(Some(data)) = stream.receive().await {
-    //             stream.send(data).await.expect("stream should be open");
-    //         }
-    //     });
-    // }
+    neuronveil::server::infer((&outcoming_sender, incoming_receiver), model_shares)
+        .await
+        .unwrap(); // TODO add ?
 }
-
