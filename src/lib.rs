@@ -1,6 +1,7 @@
 mod com;
 pub mod split;
 pub use com::Com; // TODO shouldn't be pub
+pub mod client;
 pub mod message;
 pub mod model;
 pub mod server;
