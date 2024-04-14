@@ -69,10 +69,7 @@ async fn handle_connection(connection: Connection, model: Model, system_random: 
     });
 
     // Prepare for sending
-    let (outcoming_sender, mut outcoming_receiver): (
-        mpsc::Sender<Message>,
-        mpsc::Receiver<Message>,
-    ) = mpsc::channel(1024); // TODO 1024 is a magic number
+    let (outcoming_sender, mut outcoming_receiver) = mpsc::channel(1024); // TODO 1024 is a magic number
 
     tokio::spawn(async move {
         while let Some(message) = outcoming_receiver.recv().await {
