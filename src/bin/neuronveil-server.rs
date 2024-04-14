@@ -1,9 +1,8 @@
 use std::{error::Error, fs::File, io::BufReader, path::Path, sync::Arc};
 
 use flexi_logger;
-use log::{debug, info, warn};
+use log::debug;
 use ring::rand::{SecureRandom, SystemRandom};
-use s2n_quic::provider::tls::TryInto;
 use s2n_quic::{connection::Connection, Server};
 use tokio::sync::mpsc;
 
@@ -35,7 +34,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .with_io("127.0.0.1:4433")?
         .start()?;
 
-    while let Some(mut connection) = server.accept().await {
+    while let Some(connection) = server.accept().await {
         tokio::spawn(handle_connection(
             connection,
             model.clone(),
@@ -46,17 +45,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-async fn handle_connection(
-    mut connection: Connection,
-    model: Model,
-    system_random: Arc<SystemRandom>,
-) {
+async fn handle_connection(connection: Connection, model: Model, system_random: Arc<SystemRandom>) {
     debug!("New connection from {}", connection.remote_addr().unwrap());
 
     let (mut connection_handle, mut stream_acceptor) = connection.split();
 
     // Prepare for listening
-    let (incoming_sender, mut incoming_receiver) = mpsc::channel(1024); // TODO 1024 is a magic number
+    let (incoming_sender, incoming_receiver) = mpsc::channel(1024); // TODO 1024 is a magic number
 
     tokio::spawn(async move {
         while let Ok(Some(mut stream)) = stream_acceptor.accept_receive_stream().await {
