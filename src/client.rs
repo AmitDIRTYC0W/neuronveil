@@ -6,6 +6,7 @@ use ring::rand::SecureRandom;
 use crate::{
     com::{com_to_f32, f32_to_com},
     message::{Message, IO},
+    model::ModelShare,
     split::Split,
     unexpected_message_error::UnexpectedMessageError,
     Com,
@@ -32,17 +33,44 @@ pub async fn infer_raw(
     (sender, mut receiver): IO<'_>,
     input_shares: (Array1<Com>, Array1<Com>),
 ) -> Result<Array1<Com>, Box<dyn Error>> {
+    // Send the server an input share
     sender.send(Message::InputShare(input_shares.1)).await?;
 
     // Wait for the model share
-    if let Some(model_share_message) = receiver.recv().await {
-        if let Message::ModelShare(model_share) = model_share_message {
-            // Infer the model
-            model_share.infer(input_shares.0).await
-        } else {
-            Err(Box::new(UnexpectedMessageError {}))
-        }
+    let model_share_message: Message;
+    if let Some(message) = receiver.recv().await {
+        model_share_message = message;
     } else {
-        Err(Box::new(UnexpectedMessageError {}))
+        return Err(Box::new(UnexpectedMessageError {}));
     }
+
+    // Verify the message is indeed a model share
+    let model_share: ModelShare;
+    if let Message::ModelShare(contents) = model_share_message {
+        model_share = contents;
+    } else {
+        return Err(Box::new(UnexpectedMessageError {}));
+    }
+
+    // Infer the model
+    let our_output_share = model_share.infer(input_shares.0).await?;
+
+    // Wait for output share
+    let output_share_message: Message;
+    if let Some(message) = receiver.recv().await {
+        output_share_message = message;
+    } else {
+        return Err(Box::new(UnexpectedMessageError {}));
+    }
+
+    // Verify the message is indeed an output share
+    let their_output_share: Array1<Com>;
+    if let Message::OutputShare(contents) = output_share_message {
+        their_output_share = contents;
+    } else {
+        return Err(Box::new(UnexpectedMessageError {}));
+    }
+
+    // Reconstruct the output
+    Ok(our_output_share + their_output_share)
 }

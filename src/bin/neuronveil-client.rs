@@ -64,12 +64,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    neuronveil::client::infer(
+    let output = neuronveil::client::infer(
         (&outcoming_sender, incoming_receiver),
         array![1f32, 2f32, 3f32],
         system_random.as_ref(),
     )
     .await?;
+
+    println!("Output: {:#}", output);
 
     tokio::time::sleep(Duration::from_millis(100)).await;
 

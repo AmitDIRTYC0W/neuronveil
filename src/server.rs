@@ -1,9 +1,12 @@
 use std::error::Error;
 
+use ndarray::Array1;
+
 use crate::message::Message;
 use crate::message::IO;
 use crate::model::ModelShare;
 use crate::unexpected_message_error::UnexpectedMessageError;
+use crate::Com;
 
 pub async fn infer(
     (sender, mut receiver): IO<'_>,
@@ -11,19 +14,30 @@ pub async fn infer(
 ) -> Result<(), Box<dyn Error>> {
     // FIXME: this runs sequentially even though I can easily parallelise this
 
-    // Send the client a model share whilst listening
+    // Send the client a model share
     sender.send(Message::ModelShare(model_shares.1)).await?;
 
     // Wait for the input share
-    if let Some(input_share_message) = receiver.recv().await {
-        if let Message::InputShare(input_share) = input_share_message {
-            // Infer the model
-            model_shares.0.infer(input_share).await?;
-            Ok(())
-        } else {
-            Err(Box::new(UnexpectedMessageError {}))
-        }
+    let input_share_message: Message;
+    if let Some(message) = receiver.recv().await {
+        input_share_message = message;
     } else {
-        Err(Box::new(UnexpectedMessageError {}))
+        return Err(Box::new(UnexpectedMessageError {}));
     }
+
+    // Verify the message is indeed an input share
+    let input_share: Array1<Com>;
+    if let Message::InputShare(contents) = input_share_message {
+        input_share = contents;
+    } else {
+        return Err(Box::new(UnexpectedMessageError {}));
+    }
+
+    // Infer the model
+    let output_share = model_shares.0.infer(input_share).await?;
+
+    // Send the output share back to the client
+    sender.send(Message::OutputShare(output_share)).await?;
+
+    Ok(())
 }
