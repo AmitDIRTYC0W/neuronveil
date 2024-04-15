@@ -1,3 +1,5 @@
+use std::fmt::{Display, Error, Formatter};
+
 use ndarray::{Array1, Array2};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
@@ -21,4 +23,5 @@ pub enum Message {
 }
 
 // TODO replace mpsc::Receiver with a message multiplexing receiver
+// TODO maybe use references?
 pub(crate) type IO<'a> = (&'a mpsc::Sender<Message>, mpsc::Receiver<Message>);

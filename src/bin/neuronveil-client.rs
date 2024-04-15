@@ -61,7 +61,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
             stream.send(buffer).await.expect("stream should be open");
             stream.close().await.unwrap();
-            debug!("A'ight");
         }
     });
 
