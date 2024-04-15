@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use ndarray::{Array1, Array2};
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
@@ -14,6 +16,12 @@ pub struct DenseLayer {
 pub struct DenseLayerShare {
     pub weights_share: Array2<Com>,
     pub biases_share: Array1<Com>,
+}
+
+impl DenseLayerShare {
+    pub async fn infer(&self, input_share: Array1<Com>) -> Result<Array1<Com>, Box<dyn Error>> {
+        Ok(input_share + &self.biases_share)
+    }
 }
 
 impl Split for DenseLayer {

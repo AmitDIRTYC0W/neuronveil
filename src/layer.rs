@@ -24,7 +24,11 @@ pub enum LayerShare {
 
 impl LayerShare {
     pub async fn infer(&self, input_share: Array1<Com>) -> Result<Array1<Com>, Box<dyn Error>> {
-        Ok(input_share)
+        match self {
+            LayerShare::DenseLayerShare(dense_layer_share) => {
+                dense_layer_share.infer(input_share).await
+            }
+        }
     }
 }
 

@@ -73,6 +73,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     println!("Output: {:#}", output);
 
+    // FIXME this shouldn't be needed
     tokio::time::sleep(Duration::from_millis(100)).await;
 
     // TODO remove this:
