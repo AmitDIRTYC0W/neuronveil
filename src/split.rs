@@ -1,3 +1,5 @@
+use std::num::Wrapping;
+
 use ndarray::{Array1, Array2};
 use ring::rand;
 use ring::rand::SecureRandom;
@@ -18,7 +20,7 @@ impl Split for Array1<Com> {
     fn split(&self, rng: &dyn SecureRandom) -> (Self::Splitted, Self::Splitted) {
         // Generate a random array
         let first_share = Array1::from_shape_simple_fn(self.len(), || {
-            Com::from_le_bytes(rand::generate(rng).unwrap().expose())
+            Wrapping(i16::from_le_bytes(rand::generate(rng).unwrap().expose()))
         });
 
         // Choose the second array s.t. the sum of both share is the original value
@@ -35,7 +37,7 @@ impl Split for Array2<Com> {
         // Generate a random array
         // TODO consider using zerocopy
         let first_share = Array2::from_shape_simple_fn((self.shape()[0], self.shape()[1]), || {
-            Com::from_le_bytes(rand::generate(rng).unwrap().expose())
+            Wrapping(i16::from_le_bytes(rand::generate(rng).unwrap().expose()))
         });
 
         // Choose the second array s.t. the sum of both share is the original value
