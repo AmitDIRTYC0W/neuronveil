@@ -14,8 +14,8 @@ pub struct DenseLayer {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DenseLayerShare {
-    pub weights_share: Array2<Com>,
-    pub biases_share: Array1<Com>,
+    pub(self) weights_share: Array2<Com>,
+    pub(self) biases_share: Array1<Com>,
 }
 
 impl DenseLayerShare {
