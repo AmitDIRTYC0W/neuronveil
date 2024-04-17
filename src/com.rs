@@ -10,10 +10,12 @@ const FRACTION: f32 = (1 << FRACTION_BITS) as f32;
 #[derive(Copy, Clone, Debug)]
 pub struct Com(Wrapping<i16>);
 
+#[inline]
 pub(crate) fn f32_to_com<D: Dimension>(a: Array<f32, D>) -> Array<Com, D> {
     (FRACTION * a).map(|&x| Com(Wrapping(x as i16)))
 }
 
+#[inline]
 pub(crate) fn com_to_f32<D: Dimension>(a: Array<Com, D>) -> Array<f32, D> {
     a.map(|&x| x.0 .0 as f32) / FRACTION
 }
