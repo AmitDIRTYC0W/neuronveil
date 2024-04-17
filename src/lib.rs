@@ -6,4 +6,5 @@ pub mod client;
 mod layer;
 pub mod message;
 pub mod model;
+mod multiplication_triplet_share;
 pub mod server;

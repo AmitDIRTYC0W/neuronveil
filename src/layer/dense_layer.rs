@@ -4,7 +4,9 @@ use ndarray::{Array1, Array2};
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
 
-use crate::{split::Split, Com};
+use crate::{
+    message::IO, multiplication_triplet_share::MultiplicationTripletShare, split::Split, Com,
+};
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct DenseLayer {
@@ -19,8 +21,16 @@ pub struct DenseLayerShare {
 }
 
 impl DenseLayerShare {
-    pub async fn infer(&self, input_share: Array1<Com>) -> Result<Array1<Com>, Box<dyn Error>> {
-        Ok(input_share + &self.biases_share)
+    pub async fn infer<const PARTY: bool>(
+        &self,
+        input_share: Array1<Com>,
+        (sender, receiver): IO<'_>,
+    ) -> Result<Array1<Com>, Box<dyn Error>> {
+        let mt = MultiplicationTripletShare::new(input_share.len(), self.biases_share.len());
+        let product = mt
+            .multiply::<PARTY>(&input_share, &self.weights_share, (sender, receiver))
+            .await?;
+        Ok(product + &self.biases_share)
     }
 }
 

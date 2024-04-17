@@ -1,5 +1,3 @@
-use std::fmt::{Display, Error, Formatter};
-
 use ndarray::{Array1, Array2};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
@@ -7,10 +5,10 @@ use tokio::sync::mpsc;
 use crate::model::ModelShare;
 use crate::Com;
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct MultiplicationTripletShare {
-    d_matrix: Array2<Com>,
-    e_matrix: Array2<Com>,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct MultiplicationTripletInteraction {
+    pub e_share: Array1<Com>,
+    pub f_share: Array2<Com>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -18,10 +16,10 @@ pub struct MultiplicationTripletShare {
 pub enum Message {
     ModelShare(ModelShare),
     InputShare(Array1<Com>),
-    MultiplicationTripletShare(MultiplicationTripletShare),
+    MultiplicationTripletInteraction(MultiplicationTripletInteraction),
     OutputShare(Array1<Com>),
 }
 
 // TODO replace mpsc::Receiver with a message multiplexing receiver
 // TODO maybe use references?
-pub(crate) type IO<'a> = (&'a mpsc::Sender<Message>, mpsc::Receiver<Message>);
+pub(crate) type IO<'a> = (&'a mpsc::Sender<Message>, &'a mut mpsc::Receiver<Message>);

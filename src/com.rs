@@ -2,13 +2,12 @@ use std::{num::Wrapping, ops};
 
 use ndarray::{Array, Dimension, ScalarOperand};
 use num_traits::identities;
-use serde::Serialize;
 
 const FRACTION_BITS: i16 = 4;
 const FRACTION: f32 = (1 << FRACTION_BITS) as f32;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Com(Wrapping<i16>);
+pub struct Com(pub Wrapping<i16>);
 
 #[inline]
 pub(crate) fn f32_to_com<D: Dimension>(a: Array<f32, D>) -> Array<Com, D> {
@@ -18,6 +17,11 @@ pub(crate) fn f32_to_com<D: Dimension>(a: Array<f32, D>) -> Array<Com, D> {
 #[inline]
 pub(crate) fn com_to_f32<D: Dimension>(a: Array<Com, D>) -> Array<f32, D> {
     a.map(|&x| x.0 .0 as f32) / FRACTION
+}
+
+#[inline]
+pub(crate) fn adjust_product<T: ops::Div<Com>>(a: T) -> <T as ops::Div<Com>>::Output {
+    a / Com(Wrapping(1 << FRACTION_BITS))
 }
 
 impl identities::Zero for Com {

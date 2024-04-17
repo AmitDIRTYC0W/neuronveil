@@ -32,7 +32,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let (mut connection_handle, mut stream_acceptor) = connection.split();
 
     // Prepare for listening
-    let (incoming_sender, incoming_receiver) = mpsc::channel(1024); // TODO 1024 is a magic number
+    let (incoming_sender, mut incoming_receiver) = mpsc::channel(1024); // TODO 1024 is a magic number
 
     tokio::spawn(async move {
         while let Ok(Some(mut stream)) = stream_acceptor.accept_receive_stream().await {
@@ -65,7 +65,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     });
 
     let output = neuronveil::client::infer(
-        (&outcoming_sender, incoming_receiver),
+        (&outcoming_sender, &mut incoming_receiver),
         array![1f32, 2f32],
         system_random.as_ref(),
     )

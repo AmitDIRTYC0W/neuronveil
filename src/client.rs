@@ -30,7 +30,7 @@ pub async fn infer(
 }
 
 pub async fn infer_raw(
-    (sender, mut receiver): IO<'_>,
+    (sender, receiver): IO<'_>,
     input_shares: (Array1<Com>, Array1<Com>),
 ) -> Result<Array1<Com>, Box<dyn Error>> {
     // Send the server an input share
@@ -53,7 +53,9 @@ pub async fn infer_raw(
     }
 
     // Infer the model
-    let our_output_share = model_share.infer(input_shares.0).await?;
+    let our_output_share = model_share
+        .infer::<false>(input_shares.0, (sender, receiver))
+        .await?;
 
     // Wait for output share
     let output_share_message: Message;

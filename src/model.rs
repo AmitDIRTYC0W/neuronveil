@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     layer::{Layer, LayerShare},
+    message::IO,
     split::Split,
     Com,
 };
@@ -21,11 +22,17 @@ pub struct ModelShare {
 }
 
 impl ModelShare {
-    pub async fn infer(&self, input_share: Array1<Com>) -> Result<Array1<Com>, Box<dyn Error>> {
+    pub async fn infer<const PARTY: bool>(
+        &self,
+        input_share: Array1<Com>,
+        (sender, receiver): IO<'_>,
+    ) -> Result<Array1<Com>, Box<dyn Error>> {
         let mut activations_share = input_share;
 
         for layer_share in self.layer_shares.iter() {
-            activations_share = layer_share.infer(activations_share).await?;
+            activations_share = layer_share
+                .infer::<PARTY>(activations_share, (sender, receiver))
+                .await?;
         }
 
         Ok(activations_share)

@@ -51,7 +51,7 @@ async fn handle_connection(connection: Connection, model: Model, system_random: 
     let (mut connection_handle, mut stream_acceptor) = connection.split();
 
     // Prepare for listening
-    let (incoming_sender, incoming_receiver) = mpsc::channel(1024); // TODO 1024 is a magic number
+    let (incoming_sender, mut incoming_receiver) = mpsc::channel(1024); // TODO 1024 is a magic number
 
     tokio::spawn(async move {
         while let Ok(Some(mut stream)) = stream_acceptor.accept_receive_stream().await {
@@ -89,7 +89,7 @@ async fn handle_connection(connection: Connection, model: Model, system_random: 
 
     // Start infering
     debug!("Starting the inference");
-    neuronveil::server::infer((&outcoming_sender, incoming_receiver), model_shares)
+    neuronveil::server::infer((&outcoming_sender, &mut incoming_receiver), model_shares)
         .await
         .unwrap(); // TODO add ?
 }

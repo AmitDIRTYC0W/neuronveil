@@ -6,7 +6,7 @@ use ndarray::Array1;
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
 
-use crate::{split::Split, Com};
+use crate::{message::IO, split::Split, Com};
 
 use dense_layer::{DenseLayer, DenseLayerShare};
 
@@ -23,10 +23,16 @@ pub enum LayerShare {
 }
 
 impl LayerShare {
-    pub async fn infer(&self, input_share: Array1<Com>) -> Result<Array1<Com>, Box<dyn Error>> {
+    pub async fn infer<const PARTY: bool>(
+        &self,
+        input_share: Array1<Com>,
+        (sender, receiver): IO<'_>,
+    ) -> Result<Array1<Com>, Box<dyn Error>> {
         match self {
             LayerShare::DenseLayerShare(dense_layer_share) => {
-                dense_layer_share.infer(input_share).await
+                dense_layer_share
+                    .infer::<PARTY>(input_share, (sender, receiver))
+                    .await
             }
         }
     }
