@@ -7,6 +7,7 @@ edition = "2021"
 flexi_logger = "0.28.0"
 log = "0.4.21"
 ndarray = { version = "0.15.6", features = ["serde"] }
+num-traits = "0.2.18"
 ring = { version = "0.17.8", features = ["std"] }
 s2n-quic = "1.36.0"
 serde = { version = "1.0.197", features = ["derive"] }

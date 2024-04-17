@@ -665,6 +665,7 @@ dependencies = [
  "flexi_logger",
  "log",
  "ndarray",
+ "num-traits",
  "ring 0.17.8",
  "s2n-quic",
  "serde",
