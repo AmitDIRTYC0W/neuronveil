@@ -12,6 +12,22 @@ use crate::{
     Com,
 };
 
+/// Performs client-side inference of a privacy-preserving neural network.
+///
+/// This function takes an input array of floats, representing the input to the neural network,
+/// and returns the inferred output. The inference is performed securely and privately using
+/// secure multi-party computation techniques, considering a semi-honest adversary.
+///
+/// # Parameters
+/// - `(sender, receiver)`: A sender and a receiver for asynchronous communication with the server. Messages may arrive out-of-order.
+/// - `input`: The input vector.
+/// - `rng`: A secure random number generator for secure computation.
+///
+/// # Returns
+/// Array of floats representing the inferred output of the neural network.
+///
+/// # Errors
+/// Returns an error if communication with the server fails or unexpected messages are received.
 pub async fn infer(
     (sender, receiver): IO<'_>,
     input: Array1<f32>,
@@ -29,6 +45,20 @@ pub async fn infer(
     ))
 }
 
+/// Facilitates client-side communication for inference on a privacy-preserving neural network.
+///
+/// This function operates on secret-shared values (input shares) and returns the inferred output share.
+/// It handles the secure and private communication with the server during the inference process.
+///
+/// # Parameters
+/// - `(sender, receiver)`: A sender and a receiver for asynchronous communication with the server. Messages may arrive out-of-order.
+/// - `input_shares`: The already-splitted input shares.
+///
+/// # Returns
+/// The raw inferred output vector.
+///
+/// # Errors
+/// Returns an error if communication with the server fails or unexpected messages are encountered.
 pub async fn infer_raw(
     (sender, receiver): IO<'_>,
     input_shares: (Array1<Com>, Array1<Com>),
