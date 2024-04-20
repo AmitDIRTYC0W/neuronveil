@@ -37,7 +37,7 @@ impl Split for Array2<Com> {
 
     fn split(&self, rng: &dyn SecureRandom) -> (Self::Splitted, Self::Splitted) {
         // Generate a random array
-        // TODO consider using zerocopy
+        // TODO implement RandomlyConstructable to avoid copying
         let first_share = Array2::from_shape_simple_fn((self.shape()[0], self.shape()[1]), || {
             Com(Wrapping(i16::from_le_bytes(
                 rand::generate(rng).unwrap().expose(),

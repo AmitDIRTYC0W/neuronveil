@@ -27,6 +27,8 @@ impl DenseLayerShare {
         (sender, receiver): IO<'_>,
     ) -> Result<Array1<Com>, Box<dyn Error>> {
         let mt = MultiplicationTripletShare::new(input_share.len(), self.biases_share.len());
+        let mt =
+            MultiplicationTripletShare::new(self.weights_share.nrows(), self.biases_share.len());
         let product = mt
             .multiply::<PARTY>(&input_share, &self.weights_share, (sender, receiver))
             .await?;

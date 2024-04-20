@@ -24,7 +24,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     system_random.fill(&mut random_buffer).unwrap();
 
     debug!("Reading the model");
-    let file = File::open("identity.json")?;
+    let file = File::open("model.json")?;
     let reader = BufReader::new(file);
     let model: Model = serde_json::from_reader(reader)?;
 

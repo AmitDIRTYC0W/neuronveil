@@ -1,0 +1,18 @@
+{
+    "layers": [
+        {
+            "type": "DenseLayer",
+            "biases": {
+              "data": [0, 0],
+              "dim": [2],
+              "v": 1
+            },
+            "weights": {
+              "data": [-16, 0,
+                       0, -16],
+              "dim": [2, 2],
+              "v": 1
+            }
+        }
+    ]
+}
