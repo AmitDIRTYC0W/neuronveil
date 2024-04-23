@@ -15,8 +15,22 @@ const FRACTION: f32 = (1 << FRACTION_BITS) as f32;
 /// A fixed-point number that is used for communication (hence the name 'Com') and upon which cryptography is performed.
 /// The fixed-point number is represented using a 16-bit signed integer, with the number of bits used for the fractional part
 /// defined by the `FRACTION_BITS` constant.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 pub struct Com(pub Wrapping<i16>);
+
+pub const ONE: Com = Com(Wrapping(1 << FRACTION_BITS));
+
+impl std::fmt::Display for Com {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl std::fmt::Debug for Com {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 /// Converts an array of `f32` values to an array of `Com` values. This truncates the value.
 #[inline]
