@@ -18,7 +18,25 @@ const FRACTION: f32 = (1 << FRACTION_BITS) as f32;
 #[derive(Copy, Clone)]
 pub struct Com(pub Wrapping<i16>);
 
-pub const ONE: Com = Com(Wrapping(1 << FRACTION_BITS));
+/// Wrap a value as a Com
+///
+/// # Parameters
+/// - `x`: a value already represented as Com
+///
+/// # Example
+/// `com_to_f32(com(16))` would be `1.0`
+#[inline]
+pub const fn com(x: i16) -> Com {
+    Com(Wrapping(x))
+}
+
+/// The Com representation of 1
+///
+/// # Example
+/// ```rust
+/// assert_eq!(ONE, f32_to_com(1.0));
+/// ````
+pub const ONE: Com = com(1 << FRACTION_BITS);
 
 impl std::fmt::Display for Com {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -35,7 +53,7 @@ impl std::fmt::Debug for Com {
 /// Converts an array of `f32` values to an array of `Com` values. This truncates the value.
 #[inline]
 pub(crate) fn f32_to_com<D: Dimension>(a: Array<f32, D>) -> Array<Com, D> {
-    (FRACTION * a).map(|&x| Com(Wrapping(x as i16)))
+    (FRACTION * a).map(|&x| com(x as i16))
 }
 
 /// Converts an array of `Com` values to an array of `f32` values.
@@ -52,8 +70,8 @@ pub(crate) fn com_to_f32<D: Dimension>(a: Array<Com, D>) -> Array<f32, D> {
 ///
 /// # Example
 /// ```rust
-/// let a: Com = Com(Wrapping(0x1000));
-/// let b: Com = Com(Wrapping(0x2000));
+/// let a: Com = com(0x1000);
+/// let b: Com = com(0x2000);
 /// let product = a * b;
 /// let adjusted_product = adjust_product(product);
 /// ```
@@ -63,7 +81,7 @@ pub(crate) fn com_to_f32<D: Dimension>(a: Array<Com, D>) -> Array<f32, D> {
 /// (which is `16` in this case) to produce the correct fixed-point result.
 #[inline]
 pub(crate) fn adjust_product<T: ops::Div<Com>>(a: T) -> <T as ops::Div<Com>>::Output {
-    a / Com(Wrapping(1 << FRACTION_BITS))
+    a / com(1 << FRACTION_BITS)
 }
 
 impl identities::Zero for Com {
@@ -138,8 +156,6 @@ impl<'de> serde::Deserialize<'de> for Com {
 
 pub(crate) fn sample<Sh: ShapeBuilder>(shape: Sh, rng: &dyn SecureRandom) -> Array<Com, Sh::Dim> {
     Array::from_shape_simple_fn(shape, || {
-        Com(Wrapping(i16::from_le_bytes(
-            rand::generate(rng).unwrap().expose(),
-        )))
+        com(i16::from_le_bytes(rand::generate(rng).unwrap().expose()))
     })
 }

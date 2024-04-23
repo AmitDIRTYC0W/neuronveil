@@ -1,5 +1,3 @@
-use std::num::Wrapping;
-
 use ndarray::{Array1, Array2};
 use ring::rand;
 use ring::rand::SecureRandom;
@@ -35,9 +33,7 @@ impl Split for Array2<Com> {
         // Generate a random array
         // TODO implement RandomlyConstructable to avoid copying
         let first_share = Array2::from_shape_simple_fn((self.shape()[0], self.shape()[1]), || {
-            Com(Wrapping(i16::from_le_bytes(
-                rand::generate(rng).unwrap().expose(),
-            )))
+            com::com(i16::from_le_bytes(rand::generate(rng).unwrap().expose()))
         });
 
         // Choose the second array s.t. the sum of both share is the original value
