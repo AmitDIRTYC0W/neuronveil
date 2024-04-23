@@ -6,17 +6,23 @@ use crate::model::ModelShare;
 use crate::Com;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct MultiplicationTripletInteraction {
+pub struct DotProductInteraction {
     pub e_share: Array1<Com>,
     pub f_share: Array2<Com>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct HadamardProductInteraction {
+    pub e_share: Array1<Com>,
+    pub f_share: Array1<Com>,
+}
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
 pub enum Message {
     ModelShare(ModelShare),
     InputShare(Array1<Com>),
-    MultiplicationTripletInteraction(MultiplicationTripletInteraction),
+    DotProductInteraction(DotProductInteraction),
+    HadamardProductInteraction(HadamardProductInteraction),
     OutputShare(Array1<Com>),
 }
 

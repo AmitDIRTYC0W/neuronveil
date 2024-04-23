@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use ndarray::{Array1, Array2};
+use ndarray::{Array1, Array2, Ix1, Ix2};
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
 
@@ -26,11 +26,14 @@ impl DenseLayerShare {
         input_share: Array1<Com>,
         (sender, receiver): IO<'_>,
     ) -> Result<Array1<Com>, Box<dyn Error>> {
-        let mt = MultiplicationTripletShare::new(input_share.len(), self.biases_share.len());
-        let mt =
-            MultiplicationTripletShare::new(self.weights_share.nrows(), self.biases_share.len());
+        // let mt =
+        //     MultiplicationTripletShare::<Ix1, Ix2>::new(input_share.len(), self.biases_share.len());
+        let mt = MultiplicationTripletShare::<Ix1, Ix2>::new(
+            self.weights_share.nrows(),
+            self.biases_share.len(),
+        );
         let product = mt
-            .multiply::<PARTY>(&input_share, &self.weights_share, (sender, receiver))
+            .dot_product::<PARTY>(&input_share, &self.weights_share, (sender, receiver))
             .await?;
         Ok(product + &self.biases_share)
     }
