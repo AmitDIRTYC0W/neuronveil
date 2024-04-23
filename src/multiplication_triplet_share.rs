@@ -1,6 +1,5 @@
 use std::error::Error;
 
-use log::info;
 use ndarray::{Array, Array1, Array2, Dimension, Ix, Ix1, Ix2};
 
 use crate::{

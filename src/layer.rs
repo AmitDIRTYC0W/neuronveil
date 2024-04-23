@@ -6,7 +6,6 @@ use std::error::Error;
 use ndarray::Array1;
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
-use tokio::task::JoinHandle;
 
 use crate::{message::IO, split::Split, Com};
 
