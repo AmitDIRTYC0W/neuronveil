@@ -1,4 +1,3 @@
-use std::sync::{Arc, Mutex};
 use std::{error::Error, fs::File, io::BufReader, path::Path};
 
 use flexi_logger;
@@ -43,7 +42,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let local_model = model.clone();
         local
             .run_until(async move {
-                tokio::task::spawn_local(handle_connection(connection, local_model)).await;
+                tokio::task::spawn_local(handle_connection(connection, local_model))
+                    .await
+                    .unwrap();
             })
             .await;
     }
