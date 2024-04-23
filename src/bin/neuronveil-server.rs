@@ -1,14 +1,21 @@
-use std::{error::Error, fs::File, io::BufReader, path::Path, sync::Arc};
+use std::sync::{Arc, Mutex};
+use std::{error::Error, fs::File, io::BufReader, path::Path};
 
 use flexi_logger;
 use log::debug;
-use ring::rand::{SecureRandom, SystemRandom};
+use ring::rand::SecureRandom;
+use ring::rand::SystemRandom;
 use s2n_quic::{connection::Connection, Server};
 use tokio::sync::mpsc;
 
 use neuronveil::message::Message;
 use neuronveil::model::Model;
 use neuronveil::split::Split;
+use tokio::task;
+
+// thread_local! {
+//     static SYSTEM_RANDOM: RefCell<Option<SystemRandom>> = RefCell::new(None); // NOTE a Cell/RefCell might be needed
+// }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -17,11 +24,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .unwrap()
         .start()
         .unwrap();
-
-    debug!("Initialising the CSPRNG");
-    let system_random = Arc::new(SystemRandom::new());
-    let mut random_buffer = [0u8; 4];
-    system_random.fill(&mut random_buffer).unwrap();
 
     debug!("Reading the model");
     let file = File::open("model.json")?;
@@ -34,18 +36,26 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .with_io("127.0.0.1:1967")?
         .start()?;
 
+    let local = task::LocalSet::new();
+
     while let Some(connection) = server.accept().await {
-        tokio::spawn(handle_connection(
-            connection,
-            model.clone(),
-            Arc::clone(&system_random),
-        ));
+        // FIXME this should use spawn, not spawn_local
+        let local_model = model.clone();
+        local
+            .run_until(async move {
+                tokio::task::spawn_local(handle_connection(connection, local_model)).await;
+            })
+            .await;
     }
 
     Ok(())
 }
 
-async fn handle_connection(connection: Connection, model: Model, system_random: Arc<SystemRandom>) {
+async fn handle_connection(connection: Connection, model: Model) {
+    debug!("Initialising the task-local(!) CSPRNG");
+    let system_random = SystemRandom::new();
+    system_random.fill(&mut [0u8; 4]).unwrap();
+
     debug!("New connection from {}", connection.remote_addr().unwrap());
 
     let (mut connection_handle, mut stream_acceptor) = connection.split();
@@ -85,11 +95,15 @@ async fn handle_connection(connection: Connection, model: Model, system_random: 
 
     // Split the model into shares
     // TODO This should be done in advance
-    let model_shares = model.split(system_random.as_ref());
+    let model_shares = model.split(&system_random);
 
     // Start infering
     debug!("Starting the inference");
-    neuronveil::server::infer((&outcoming_sender, &mut incoming_receiver), model_shares)
-        .await
-        .unwrap(); // TODO add ?
+    neuronveil::server::infer(
+        (&outcoming_sender, &mut incoming_receiver),
+        model_shares,
+        &system_random,
+    )
+    .await
+    .unwrap(); // TODO add ?
 }

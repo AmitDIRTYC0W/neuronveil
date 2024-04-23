@@ -39,9 +39,9 @@ pub async fn infer(
     // Split the input into shares
     let input_shares = input_com.split(rng);
 
-    // Ok(input)
+    // Ok(com_to_f32(input_com))
     Ok(com_to_f32(
-        infer_raw((sender, receiver), input_shares).await?,
+        infer_raw((sender, receiver), input_shares, rng).await?,
     ))
 }
 
@@ -62,6 +62,7 @@ pub async fn infer(
 pub async fn infer_raw(
     (sender, receiver): IO<'_>,
     input_shares: (Array1<Com>, Array1<Com>),
+    rng: &dyn SecureRandom,
 ) -> Result<Array1<Com>, Box<dyn Error>> {
     // Send the server an input share
     sender.send(Message::InputShare(input_shares.1)).await?;
@@ -84,7 +85,7 @@ pub async fn infer_raw(
 
     // Infer the model
     let our_output_share = model_share
-        .infer::<false>(input_shares.0, (sender, receiver))
+        .infer::<false>(input_shares.0, (sender, receiver), rng)
         .await?;
 
     // Wait for output share

@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use ndarray::Array1;
+use ring::rand::SecureRandom;
 
 use crate::message::Message;
 use crate::message::IO;
@@ -11,6 +12,7 @@ use crate::Com;
 pub async fn infer(
     (sender, receiver): IO<'_>,
     model_shares: (ModelShare, ModelShare),
+    rng: &dyn SecureRandom,
 ) -> Result<(), Box<dyn Error>> {
     // FIXME: this runs sequentially even though I can easily parallelise this
 
@@ -37,7 +39,7 @@ pub async fn infer(
     // Infer the model
     let output_share = model_shares
         .0
-        .infer::<true>(input_share, (sender, receiver))
+        .infer::<true>(input_share, (sender, receiver), rng)
         .await?;
 
     // Send the output share back to the client

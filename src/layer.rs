@@ -32,6 +32,7 @@ impl LayerShare {
         &self,
         input_share: Array1<Com>,
         (sender, receiver): IO<'_>,
+        rng: &dyn SecureRandom,
     ) -> Result<Array1<Com>, Box<dyn Error>> {
         match self {
             LayerShare::DenseLayerShare(dense_layer_share) => {
@@ -41,7 +42,7 @@ impl LayerShare {
             }
             LayerShare::ReLULayerShare(relu_layer_share) => {
                 relu_layer_share
-                    .infer::<PARTY>(input_share, (sender, receiver))
+                    .infer::<PARTY>(input_share, (sender, receiver), rng)
                     .await
             }
         }

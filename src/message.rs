@@ -16,6 +16,14 @@ pub struct HadamardProductInteraction {
     pub e_share: Array1<Com>,
     pub f_share: Array1<Com>,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct BitXAInteraction {
+    // TODO shorten the names here
+    pub capital_delta_x_share: Array1<Com>,
+    pub capital_delta_y_share: Array1<bool>,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
 pub enum Message {
@@ -23,6 +31,7 @@ pub enum Message {
     InputShare(Array1<Com>),
     DotProductInteraction(DotProductInteraction),
     HadamardProductInteraction(HadamardProductInteraction),
+    BitXAInteraction(BitXAInteraction),
     OutputShare(Array1<Com>),
 }
 

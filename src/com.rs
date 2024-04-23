@@ -120,6 +120,7 @@ impl_com_ops!(Add, add);
 impl_com_ops!(Sub, sub);
 impl_com_ops!(Mul, mul);
 impl_com_ops!(Div, div);
+impl_com_ops!(BitXor, bitxor);
 
 impl ScalarOperand for Com {}
 

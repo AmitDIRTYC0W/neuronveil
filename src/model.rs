@@ -26,12 +26,13 @@ impl ModelShare {
         &self,
         input_share: Array1<Com>,
         (sender, receiver): IO<'_>,
+        rng: &dyn SecureRandom,
     ) -> Result<Array1<Com>, Box<dyn Error>> {
         let mut activations_share = input_share;
 
         for layer_share in self.layer_shares.iter() {
             activations_share = layer_share
-                .infer::<PARTY>(activations_share, (sender, receiver))
+                .infer::<PARTY>(activations_share, (sender, receiver), rng)
                 .await?;
         }
 
