@@ -1,7 +1,8 @@
 use std::{num::Wrapping, ops};
 
-use ndarray::{Array, Dimension, ScalarOperand};
+use ndarray::{Array, Dimension, ScalarOperand, ShapeBuilder};
 use num_traits::identities;
+use ring::rand::{self, SecureRandom};
 
 /// The number of bits used for the fractional part of the fixed-point number.
 const FRACTION_BITS: i16 = 4;
@@ -118,4 +119,12 @@ impl<'de> serde::Deserialize<'de> for Com {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         Ok(Com(Wrapping::<i16>::deserialize(deserializer)?))
     }
+}
+
+pub(crate) fn sample<Sh: ShapeBuilder>(shape: Sh, rng: &dyn SecureRandom) -> Array<Com, Sh::Dim> {
+    Array::from_shape_simple_fn(shape, || {
+        Com(Wrapping(i16::from_le_bytes(
+            rand::generate(rng).unwrap().expose(),
+        )))
+    })
 }
