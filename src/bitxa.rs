@@ -1,5 +1,4 @@
 use std::error::Error;
-use std::num::Wrapping;
 
 use crate::com;
 use crate::message::BitXAInteraction;
@@ -48,8 +47,13 @@ pub async fn bitxa<const PARTY: bool>(
 ) -> Result<Array1<Com>, Box<dyn Error>> {
     let masked_boolean_delta_y_share = random_booleans(x_share.len(), rng);
 
-    let masked_arithmatic_delta_y_share =
-        masked_boolean_delta_y_share.mapv(|b| if b { com::ONE } else { com::com(0) });
+    let masked_arithmatic_delta_y_share = masked_boolean_delta_y_share.mapv(|b| {
+        if b {
+            Com::from_num(1)
+        } else {
+            Com::from_num(0)
+        }
+    });
     let (e_share, f_share) = if PARTY {
         (
             Array1::zeros(x_share.len()),
@@ -67,7 +71,7 @@ pub async fn bitxa<const PARTY: bool>(
         .hadamard_product::<PARTY>(&e_share, &f_share, (sender, receiver))
         .await?;
 
-    let arithmatic_delta_y_share = &e_share + &f_share - (ef_share * com::com(2));
+    let arithmatic_delta_y_share = &e_share + &f_share - (ef_share * 2);
 
     // info!(
     //     "masked boolean delta y share: {:?}",
@@ -75,7 +79,7 @@ pub async fn bitxa<const PARTY: bool>(
     // );
     // FIXME this shouldn't be necessary
     // BUG it might not be secure
-    let delta_x_share = com::sample(x_share.len(), rng) / com::com(256);
+    let delta_x_share = com::sample(x_share.len(), rng) / 256;
     info!("delta x share: {:#}", delta_x_share);
     info!(
         "delta y share: {:#} ({:#} respectively)",
@@ -119,17 +123,20 @@ pub async fn bitxa<const PARTY: bool>(
         ^ their_capital_delta_shares.capital_delta_y_share;
 
     // This is akin to Δ′y
-    let arithmatic_capital_delta_y =
-        boolean_capital_delta_y.mapv(|b| if b { com::ONE } else { com::com(0) });
+    let arithmatic_capital_delta_y = boolean_capital_delta_y.mapv(|b| {
+        if b {
+            Com::from_num(1)
+        } else {
+            Com::from_num(0)
+        }
+    });
 
     // Complete the computation
     // TODO merge adjust_product calls
-    let t = com::adjust_product(&arithmatic_capital_delta_y * &capital_delta_x);
-    let without_bt = com::adjust_product(
-        &delta_z_share * (&arithmatic_capital_delta_y * com::com(2) - com::ONE),
-    ) + com::adjust_product(
-        &arithmatic_delta_y_share * (&capital_delta_x - &t * com::com(2)),
-    ) - com::adjust_product(&arithmatic_capital_delta_y * &delta_x_share);
+    let t = &arithmatic_capital_delta_y * &capital_delta_x;
+    let without_bt = &delta_z_share * (&arithmatic_capital_delta_y * 2) - &delta_z_share
+        + &arithmatic_delta_y_share * (&capital_delta_x - &t * 2)
+        - &arithmatic_capital_delta_y * &delta_x_share;
     // let without_bt = com::adjust_product(
     //     &arithmatic_delta_y_share * (&capital_delta_x - &t * Com(Wrapping(2)))
     //         - &arithmatic_capital_delta_y * (&delta_x_share + &delta_z_share * Com(Wrapping(2))),

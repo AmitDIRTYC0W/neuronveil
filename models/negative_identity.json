@@ -3,13 +3,13 @@
         {
             "type": "DenseLayer",
             "biases": {
-              "data": [0, 0],
+              "data": [{ "bits": 0 }, { "bits": 0 }],
               "dim": [2],
               "v": 1
             },
             "weights": {
-              "data": [-16, 0,
-                       0, -16],
+              "data": [{ "bits": -16 }, { "bits": 0 },
+                       { "bits": 0 }, { "bits": -16 }],
               "dim": [2, 2],
               "v": 1
             }

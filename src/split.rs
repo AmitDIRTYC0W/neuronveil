@@ -31,10 +31,7 @@ impl Split for Array2<Com> {
 
     fn split(&self, rng: &dyn SecureRandom) -> (Self::Splitted, Self::Splitted) {
         // Generate a random array
-        // TODO implement RandomlyConstructable to avoid copying
-        let first_share = Array2::from_shape_simple_fn((self.shape()[0], self.shape()[1]), || {
-            com::com(i16::from_le_bytes(rand::generate(rng).unwrap().expose()))
-        });
+        let first_share = com::sample((self.shape()[0], self.shape()[1]), rng);
 
         // Choose the second array s.t. the sum of both share is the original value
         let second_share = self - &first_share;

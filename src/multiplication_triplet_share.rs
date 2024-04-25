@@ -61,9 +61,9 @@ impl MultiplicationTripletShare<Ix1, Ix1> {
         // Complete the computation
         // TODO take the common part out
         Ok(if PARTY {
-            com::adjust_product(&e * &f + &self.a_share * &f + &e * &self.b_share) + &self.ab_share
+            &e * &f + &self.a_share * &f + &e * &self.b_share + &self.ab_share
         } else {
-            com::adjust_product(&self.a_share * &f + &e * &self.b_share) + &self.ab_share
+            &self.a_share * &f + &e * &self.b_share + &self.ab_share
         })
     }
 
@@ -113,10 +113,9 @@ impl MultiplicationTripletShare<Ix1, Ix2> {
 
         // Complete the calculation
         Ok(if PARTY {
-            com::adjust_product(e.dot(&f) + self.a_share.dot(&f) + e.dot(&self.b_share))
-                + &self.ab_share
+            e.dot(&f) + self.a_share.dot(&f) + e.dot(&self.b_share) + &self.ab_share
         } else {
-            com::adjust_product(self.a_share.dot(&f) + e.dot(&self.b_share)) + &self.ab_share
+            self.a_share.dot(&f) + e.dot(&self.b_share) + &self.ab_share
         })
     }
 
