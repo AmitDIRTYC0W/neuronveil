@@ -1,17 +1,16 @@
-use std::error::Error;
-
+use crate::bit;
 use crate::com;
 use crate::message::BitXAInteraction;
 use crate::message::Message;
 use crate::message::IO;
 use crate::multiplication_triplet_share::MultiplicationTripletShare;
 use crate::unexpected_message_error::UnexpectedMessageError;
-use bitvec::prelude::*;
-use log::info;
-use ndarray::Array;
+use crate::Com;
+use log::debug;
 use ndarray::Array1;
 use ndarray::Ix1;
 use ring::rand::SecureRandom;
+use std::error::Error;
 
 /// Directly multiply a bit by an integer.
 ///
@@ -59,8 +58,8 @@ pub async fn bitxa<const PARTY: bool>(
     // FIXME this shouldn't be necessary
     // BUG it might not be secure
     let delta_x_share = com::sample(x_share.len(), rng) / 256;
-    info!("delta x share: {:#}", delta_x_share);
-    info!(
+    debug!("delta x share: {:#}", delta_x_share);
+    debug!(
         "delta y share: {:#} ({:#} respectively)",
         arithmatic_delta_y_share, masked_boolean_delta_y_share
     );
@@ -75,9 +74,10 @@ pub async fn bitxa<const PARTY: bool>(
         )
         .await?;
 
-    info!("delta z share: {:#}", delta_z_share);
+    debug!("delta z share: {:#}", delta_z_share);
 
     // NOTE the online stage starts here
+    // TODO use the Reconstruct trait
     // Send our shares of Δx and Δy to the other party
     let our_capital_delta_shares = BitXAInteraction {
         capital_delta_x_share: x_share + &delta_x_share,
@@ -88,6 +88,7 @@ pub async fn bitxa<const PARTY: bool>(
         .await?;
 
     // Receive the Δx and Δy shares of the other party
+    // TODO implement using their... = if let ...
     let their_capital_delta_shares: BitXAInteraction;
     if let Some(Message::BitXAInteraction(shares)) = receiver.recv().await {
         their_capital_delta_shares = shares;
