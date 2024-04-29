@@ -3,7 +3,6 @@ use std::error::Error;
 use ndarray::{Array, Array1, Array2, Dimension, Ix, Ix1, Ix2};
 
 use crate::{
-    com,
     message::{DotProductInteraction, HadamardProductInteraction, Message, IO},
     unexpected_message_error::UnexpectedMessageError,
     Com,
