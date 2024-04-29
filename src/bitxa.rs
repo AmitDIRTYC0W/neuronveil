@@ -13,39 +13,14 @@ use ndarray::Array1;
 use ndarray::Ix1;
 use ring::rand::SecureRandom;
 
-use crate::Com;
-
-/// Creates a new array of random boolean values.
 ///
-/// # Arguments
-///
-/// - `shape`: The shape of the output array.
-/// - `rng`: A secure random number generator.
-///
-/// # Returns
-///
-/// A new array of random boolean values with the specified shape.
-#[inline]
-fn random_booleans(n: usize, rng: &dyn SecureRandom) -> Array1<bool> {
-    // Calculate the minimum no. of bytes to generate to cover the amount of bits
-    let bytes_to_generate = (n + 7) / 8;
-
-    // Generate these bytes
-    let mut bytes: Box<[u8]> = unsafe { Box::new_uninit_slice(bytes_to_generate).assume_init() };
-    rng.fill(&mut bytes).unwrap();
-
-    let bits = bytes.as_ref().view_bits::<Lsb0>();
-
-    Array::from_iter(bits.iter().by_vals().take(n))
-}
-
 pub async fn bitxa<const PARTY: bool>(
     x_share: &Array1<Com>,
     y_share: &Array1<bool>,
     (sender, receiver): IO<'_>,
     rng: &dyn SecureRandom,
 ) -> Result<Array1<Com>, Box<dyn Error>> {
-    let masked_boolean_delta_y_share = random_booleans(x_share.len(), rng);
+    let masked_boolean_delta_y_share = bit::sample(x_share.len(), rng);
 
     let masked_arithmatic_delta_y_share = masked_boolean_delta_y_share.mapv(|b| {
         if b {

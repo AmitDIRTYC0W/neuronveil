@@ -4,6 +4,7 @@ mod com;
 pub mod split;
 mod unexpected_message_error;
 pub use com::Com; // TODO shouldn't be pub
+pub(crate) mod bit;
 mod bitxa;
 pub mod client;
 mod layer;
