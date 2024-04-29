@@ -66,7 +66,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let output = neuronveil::client::infer(
         (&outcoming_sender, &mut incoming_receiver),
-        array![1f32, 2f32],
+        array![1f32, 1f32, -1f32, -1f32],
         system_random.as_ref(),
     )
     .await?;

@@ -1,0 +1,23 @@
+{
+    "layers": [
+        {
+            "type": "DenseLayer",
+            "biases": {
+              "data": [{ "bits": 0 }, { "bits": 0 }, { "bits": 0 }, { "bits": 0 }],
+              "dim": [4],
+              "v": 1
+            },
+            "weights": {
+              "data": [{ "bits": 16 }, { "bits":  0 }, { "bits":  0 }, { "bits":  0 },
+                       { "bits":  0 }, { "bits": 16 }, { "bits":  0 }, { "bits":  0 },
+                       { "bits":  0 }, { "bits":  0 }, { "bits": 16 }, { "bits":  0 },
+                       { "bits":  0 }, { "bits":  0 }, { "bits":  0 }, { "bits": 16 }],
+              "dim": [4, 4],
+              "v": 1
+            }
+        },
+        {
+            "type": "ReLULayer"
+        }
+    ]
+}
