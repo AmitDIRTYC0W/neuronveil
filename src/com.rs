@@ -1,8 +1,5 @@
-use std::{num::Wrapping, ops};
-
-use fixed::{types::extra::U4, FixedI16};
-use ndarray::{Array, Dimension, ScalarOperand, ShapeBuilder};
-use num_traits::identities;
+use fixed::{FixedI16, Wrapping};
+use ndarray::{Array, Dimension, ShapeBuilder};
 use ring::rand::{self, SecureRandom};
 
 /// The number of bits used for the fractional part of the fixed-point number.
@@ -16,7 +13,7 @@ const FRACTION: f32 = (1 << FRACTION_BITS) as f32;
 /// A fixed-point number that is used for communication (hence the name 'Com') and upon which cryptography is performed.
 /// The fixed-point number is represented using a 16-bit signed integer, with the number of bits used for the fractional part
 /// defined by the `FRACTION_BITS` constant.
-pub type Com = FixedI16<U4>;
+pub type Com = Wrapping<FixedI16<4>>;
 
 /// Converts an array of `f32` values to an array of `Com` values. This truncates the value.
 #[inline]
