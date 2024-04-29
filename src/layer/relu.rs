@@ -1,11 +1,11 @@
-use std::error::Error;
-
+use crate::{bitxa, message::IO, split::Split, Com};
 use log::info;
 use ndarray::Array1;
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
+use std::error::Error;
 
-use crate::{bitxa, message::IO, split::Split, Com};
+pub(crate) mod drelu;
 
 #[derive(Deserialize, Debug, Clone, Copy)]
 pub struct ReLULayer {}
@@ -20,16 +20,10 @@ impl ReLULayerShare {
         (sender, receiver): IO<'_>,
         rng: &dyn SecureRandom,
     ) -> Result<Array1<Com>, Box<dyn Error>> {
-        info!("input_share: {:?}", input_share);
-        bitxa::<PARTY>(
-            &input_share,
-            &Array1::from_elem(input_share.len(), PARTY),
-            (sender, receiver),
-            rng,
-        )
-        .await
-        // BitXA(x, DReLU())
-        // Ok(input_share)
+        let drelu_output_share =
+            drelu::drelu::<PARTY>(&input_share, (sender, receiver), rng).await?;
+        info!("DReLU share: {:#}", drelu_output_share);
+        bitxa::<PARTY>(&input_share, &drelu_output_share, (sender, receiver), rng).await
     }
 }
 

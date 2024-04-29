@@ -2,7 +2,9 @@ use ndarray::{Array1, Array2};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
 
+use crate::layer::relu::drelu::{DReLUInteraction, DReLUKey};
 use crate::model::ModelShare;
+use crate::unexpected_message_error::UnexpectedMessageError;
 use crate::Com;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -24,6 +26,20 @@ pub struct BitXAInteraction {
     pub capital_delta_y_share: Array1<bool>,
 }
 
+// TODO move to other place
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DDCFKey {
+    pub alpha: Array1<Com>,
+    pub invert: Array1<bool>,
+}
+
+// TODO move to other place
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SignedComparisonKeys {
+    pub ddcf_keys: DDCFKey,
+    pub r_shares: Array1<bool>,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
 pub enum Message {
@@ -31,8 +47,28 @@ pub enum Message {
     InputShare(Array1<Com>),
     DotProductInteraction(DotProductInteraction),
     HadamardProductInteraction(HadamardProductInteraction),
+    DReLUKey(DReLUKey),
+    DReLUInteraction(DReLUInteraction),
     BitXAInteraction(BitXAInteraction),
     OutputShare(Array1<Com>),
+}
+
+impl From<DReLUInteraction> for Message {
+    fn from(value: DReLUInteraction) -> Self {
+        Message::DReLUInteraction(value)
+    }
+}
+
+impl TryFrom<Message> for DReLUInteraction {
+    type Error = Box<UnexpectedMessageError>;
+
+    fn try_from(value: Message) -> Result<Self, Self::Error> {
+        if let Message::DReLUInteraction(contents) = value {
+            Ok(contents)
+        } else {
+            Err(Box::new(UnexpectedMessageError {}))
+        }
+    }
 }
 
 // TODO replace mpsc::Receiver with a message multiplexing receiver

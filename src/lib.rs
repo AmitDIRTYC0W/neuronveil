@@ -14,3 +14,4 @@ mod multiplication_triplet_share;
 pub mod server;
 pub(crate) use bitxa::bitxa;
 pub(crate) mod reconstruct;
+pub(crate) mod signed_comparison;
