@@ -1,5 +1,5 @@
 mod dense_layer;
-mod relu;
+pub(crate) mod relu;
 
 use std::error::Error;
 
