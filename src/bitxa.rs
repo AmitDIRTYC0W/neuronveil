@@ -13,7 +13,11 @@ use ndarray::Array1;
 use ndarray::Ix1;
 use ring::rand::SecureRandom;
 
+/// Directly multiply a bit by an integer.
 ///
+/// This is a vectorised implementation of Algorithm no. 1 from
+// [FssNN: Communication-Efficient Secure Neural Network Training via Function Secret Sharing](https://eprint.iacr.org/2023/073.pdf).
+// FIXME this function is long
 pub async fn bitxa<const PARTY: bool>(
     x_share: &Array1<Com>,
     y_share: &Array1<bool>,
