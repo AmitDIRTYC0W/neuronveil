@@ -47,42 +47,30 @@ pub enum Message {
     OutputShare(Array1<Com>),
 }
 
-impl From<DReLUInteraction> for Message {
-    fn from(value: DReLUInteraction) -> Self {
-        Message::DReLUInteraction(value)
-    }
-}
-
-impl TryFrom<Message> for DReLUInteraction {
-    type Error = Box<UnexpectedMessageError>;
-
-    fn try_from(value: Message) -> Result<Self, Self::Error> {
-        if let Message::DReLUInteraction(contents) = value {
-            Ok(contents)
-        } else {
-            Err(Box::new(UnexpectedMessageError {}))
+macro_rules! impl_message_conversions {
+    ($message_type:ident) => {
+        impl From<$message_type> for Message {
+            fn from(value: $message_type) -> Self {
+                Message::$message_type(value)
+            }
         }
-    }
-}
 
-impl From<BitXAInteraction> for Message {
-    fn from(value: BitXAInteraction) -> Self {
-        Message::BitXAInteraction(value)
-    }
-}
+        impl TryFrom<Message> for $message_type {
+            type Error = Box<UnexpectedMessageError>;
 
-impl TryFrom<Message> for BitXAInteraction {
-    type Error = Box<UnexpectedMessageError>;
-
-    fn try_from(value: Message) -> Result<Self, Self::Error> {
-        if let Message::BitXAInteraction(contents) = value {
-            Ok(contents)
-        } else {
-            Err(Box::new(UnexpectedMessageError {}))
+            fn try_from(value: Message) -> Result<Self, Self::Error> {
+                if let Message::$message_type(contents) = value {
+                    Ok(contents)
+                } else {
+                    Err(Box::new(UnexpectedMessageError {}))
+                }
+            }
         }
-    }
+    };
 }
+
+impl_message_conversions!(DReLUInteraction);
+impl_message_conversions!(BitXAInteraction);
 
 // TODO replace mpsc::Receiver with a message multiplexing receiver
-// TODO maybe use references?
 pub(crate) type IO<'a> = (&'a mpsc::Sender<Message>, &'a mut mpsc::Receiver<Message>);
