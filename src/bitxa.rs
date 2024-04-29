@@ -1,16 +1,44 @@
 use crate::bit;
 use crate::com;
-use crate::message::BitXAInteraction;
-use crate::message::Message;
 use crate::message::IO;
 use crate::multiplication_triplet_share::MultiplicationTripletShare;
+use crate::reconstruct::Reconstruct;
+use crate::reconstruct::ReconstructOnline;
 use crate::unexpected_message_error::UnexpectedMessageError;
 use crate::Com;
 use log::debug;
 use ndarray::Array1;
 use ndarray::Ix1;
 use ring::rand::SecureRandom;
+use serde::Deserialize;
+use serde::Serialize;
 use std::error::Error;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct BitXAInteraction {
+    // TODO shorten the names here
+    pub capital_delta_x_share: Array1<Com>,
+    pub capital_delta_y_share: Array1<bool>,
+}
+
+impl Reconstruct for BitXAInteraction {
+    type Reconstructed = CapitalDeltas;
+
+    fn reconstruct(shares: (&Self, &Self)) -> Self::Reconstructed {
+        CapitalDeltas {
+            x: &shares.0.capital_delta_x_share + &shares.1.capital_delta_x_share,
+            y: &shares.0.capital_delta_y_share ^ &shares.1.capital_delta_y_share,
+        }
+    }
+}
+
+impl ReconstructOnline for BitXAInteraction {}
+
+#[derive(Debug, Clone)]
+pub struct CapitalDeltas {
+    pub x: Array1<Com>,
+    pub y: Array1<bool>,
+}
 
 /// Directly multiply a bit by an integer.
 ///
@@ -77,33 +105,17 @@ pub async fn bitxa<const PARTY: bool>(
     debug!("delta z share: {:#}", delta_z_share);
 
     // NOTE the online stage starts here
-    // TODO use the Reconstruct trait
-    // Send our shares of Δx and Δy to the other party
+    // struct Δx and Δy
     let our_capital_delta_shares = BitXAInteraction {
         capital_delta_x_share: x_share + &delta_x_share,
         capital_delta_y_share: y_share ^ &masked_boolean_delta_y_share,
     };
-    sender
-        .send(Message::BitXAInteraction(our_capital_delta_shares.clone()))
+    let capital_deltas = our_capital_delta_shares
+        .reconstruct_mutually((sender, receiver))
         .await?;
 
-    // Receive the Δx and Δy shares of the other party
-    // TODO implement using their... = if let ...
-    let their_capital_delta_shares: BitXAInteraction;
-    if let Some(Message::BitXAInteraction(shares)) = receiver.recv().await {
-        their_capital_delta_shares = shares;
-    } else {
-        return Err(Box::new(UnexpectedMessageError {}));
-    }
-
-    // Reconstruct Δx and Δy
-    let capital_delta_x = our_capital_delta_shares.capital_delta_x_share
-        + their_capital_delta_shares.capital_delta_x_share;
-    let boolean_capital_delta_y = our_capital_delta_shares.capital_delta_y_share
-        ^ their_capital_delta_shares.capital_delta_y_share;
-
     // This is akin to Δ′y
-    let arithmatic_capital_delta_y = boolean_capital_delta_y.mapv(|b| {
+    let arithmatic_capital_delta_y = capital_deltas.y.mapv(|b| {
         if b {
             Com::from_num(1)
         } else {
@@ -113,9 +125,9 @@ pub async fn bitxa<const PARTY: bool>(
 
     // Complete the computation
     // TODO merge adjust_product calls
-    let t = &arithmatic_capital_delta_y * &capital_delta_x;
+    let t = &arithmatic_capital_delta_y * &capital_deltas.x;
     let without_bt = &delta_z_share * (&arithmatic_capital_delta_y * 2) - &delta_z_share
-        + &arithmatic_delta_y_share * (&capital_delta_x - &t * 2)
+        + &arithmatic_delta_y_share * (&capital_deltas.x - &t * 2)
         - &arithmatic_capital_delta_y * &delta_x_share;
     // let without_bt = com::adjust_product(
     //     &arithmatic_delta_y_share * (&capital_delta_x - &t * Com(Wrapping(2)))

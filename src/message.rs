@@ -2,6 +2,7 @@ use ndarray::{Array1, Array2};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
 
+use crate::bitxa::BitXAInteraction;
 use crate::layer::relu::drelu::{DReLUInteraction, DReLUKey};
 use crate::model::ModelShare;
 use crate::unexpected_message_error::UnexpectedMessageError;
@@ -17,13 +18,6 @@ pub struct DotProductInteraction {
 pub struct HadamardProductInteraction {
     pub e_share: Array1<Com>,
     pub f_share: Array1<Com>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct BitXAInteraction {
-    // TODO shorten the names here
-    pub capital_delta_x_share: Array1<Com>,
-    pub capital_delta_y_share: Array1<bool>,
 }
 
 // TODO move to other place
@@ -64,6 +58,24 @@ impl TryFrom<Message> for DReLUInteraction {
 
     fn try_from(value: Message) -> Result<Self, Self::Error> {
         if let Message::DReLUInteraction(contents) = value {
+            Ok(contents)
+        } else {
+            Err(Box::new(UnexpectedMessageError {}))
+        }
+    }
+}
+
+impl From<BitXAInteraction> for Message {
+    fn from(value: BitXAInteraction) -> Self {
+        Message::BitXAInteraction(value)
+    }
+}
+
+impl TryFrom<Message> for BitXAInteraction {
+    type Error = Box<UnexpectedMessageError>;
+
+    fn try_from(value: Message) -> Result<Self, Self::Error> {
+        if let Message::BitXAInteraction(contents) = value {
             Ok(contents)
         } else {
             Err(Box::new(UnexpectedMessageError {}))
