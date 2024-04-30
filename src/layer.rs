@@ -1,22 +1,19 @@
 mod dense_layer;
 pub(crate) mod relu;
 
-use std::error::Error;
-
+use crate::{message::IO, split::Split, Com};
+use dense_layer::{DenseLayer, DenseLayerShare};
 use ndarray::Array1;
+use relu::{ReLULayer, ReLULayerShare};
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
-
-use crate::{message::IO, split::Split, Com};
-
-use dense_layer::{DenseLayer, DenseLayerShare};
-use relu::{ReLULayer, ReLULayerShare};
+use std::error::Error;
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum Layer {
     DenseLayer(DenseLayer),
-    ReLULayer(ReLULayer),
+    ReLULayer(ReLULayer), // TODO ReLULayer shouldn't be a type, just use a union like a union here
 }
 
 #[derive(Serialize, Deserialize, Debug)]
