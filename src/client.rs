@@ -4,9 +4,10 @@ use ndarray::Array1;
 use ring::rand::SecureRandom;
 
 use crate::{
-    com::{com_to_f32, f32_to_com},
+    com::f32_to_com,
     message::{Message, IO},
     model::ModelShare,
+    reconstruct::{self, Reconstruct as _},
     split::Split,
     unexpected_message_error::UnexpectedMessageError,
     Com,
@@ -40,9 +41,9 @@ pub async fn infer(
     let input_shares = input_com.split(rng);
 
     // Ok(com_to_f32(input_com))
-    Ok(com_to_f32(
-        infer_raw((sender, receiver), input_shares, rng).await?,
-    ))
+    Ok(infer_raw((sender, receiver), input_shares, rng)
+        .await?
+        .mapv(Com::to_num::<f32>))
 }
 
 /// Facilitates client-side communication for inference on a privacy-preserving neural network.
@@ -105,5 +106,8 @@ pub async fn infer_raw(
     }
 
     // Reconstruct the output
-    Ok(our_output_share + their_output_share)
+    Ok(Array1::<Com>::reconstruct((
+        &our_output_share,
+        &their_output_share,
+    )))
 }

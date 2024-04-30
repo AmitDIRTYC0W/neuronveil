@@ -1,4 +1,6 @@
-use std::error::Error;
+use std::{error::Error, ops::Add};
+
+use ndarray::{Array, ArrayBase, ArrayView, Dimension, RawData};
 
 use crate::{
     message::{Message, IO},
@@ -31,5 +33,18 @@ pub trait ReconstructOnline: Reconstruct + TryFrom<Message> + Into<Message> + Cl
 
         // Reconstruct the secret
         Ok(Self::reconstruct((&self, &their_share)))
+    }
+}
+
+impl<S, D> Reconstruct for ArrayBase<S, D>
+where
+    S: RawData,
+    D: Dimension,
+    for<'a> &'a ArrayBase<S, D>: Add<&'a ArrayBase<S, D>, Output = ArrayBase<S, D>>,
+{
+    type Reconstructed = ArrayBase<S, D>;
+
+    fn reconstruct(shares: (&Self, &Self)) -> Self::Reconstructed {
+        shares.0 + shares.1
     }
 }
