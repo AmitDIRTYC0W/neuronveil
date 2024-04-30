@@ -19,7 +19,7 @@ pub type Com = Wrapping<FixedI16<4>>;
 #[inline]
 #[deprecated]
 pub(crate) fn f32_to_com<D: Dimension>(a: Array<f32, D>) -> Array<Com, D> {
-    (FRACTION * a).mapv(Com::from_num)
+    a.mapv(Com::from_num)
 }
 
 /// Converts an array of `Com` values to an array of `f32` values.
