@@ -22,7 +22,6 @@ impl ReLULayerShare {
     ) -> Result<Array1<Com>, Box<dyn Error>> {
         let drelu_output_share =
             drelu::drelu::<PARTY>(&input_share, (sender, receiver), rng).await?;
-        info!("DReLU share: {:#}", drelu_output_share);
         bitxa::<PARTY>(&input_share, &drelu_output_share, (sender, receiver), rng).await
     }
 }

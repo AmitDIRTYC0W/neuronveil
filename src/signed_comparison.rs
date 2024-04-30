@@ -72,7 +72,6 @@ impl SignedComparisonKeys {
     ) -> Array1<bool> {
         let z = &masked_x - &masked_y;
 
-        info!("Z: {:#?}", z);
         // TODO I shouldn't write 0x7FFF manually
         let point = (!&z) & Com::from_bits(0x7FFF); // z^{(n - 1)} = 2^{n-1} - z_{[0, n-1)} - 1
 
