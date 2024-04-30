@@ -37,9 +37,12 @@ pub fn generate_signed_comparison_keys(
     rng: &dyn SecureRandom,
 ) -> (SignedComparisonKeys, SignedComparisonKeys) {
     let r = r2_ins - r1_ins /* + (1 << 16) */; // NOTE is the (1 << 16) even necessary?
-    let alpha = &r & Com::from_bits(0x7FFF); // TODO I shouldn't write 0x7FFF manually
-    let invert = get_msb(&r) /* ^ true */; // WARNING maybe invert should be inverted
-    let dual_comparison_function = DDCFKey { alpha, invert };
+    let alpha_n_minus_1 = &r & Com::from_bits(0x7FFF); // TODO I shouldn't write 0x7FFF manually
+    let invert = get_msb(&r); // WARNING maybe invert should be inverted
+    let dual_comparison_function = DDCFKey {
+        alpha: alpha_n_minus_1,
+        invert,
+    };
     let ddcf_keys = (dual_comparison_function.clone(), dual_comparison_function);
 
     // Sample random r0 and r1 s.t. they share r_out
@@ -67,7 +70,7 @@ impl SignedComparisonKeys {
         // (sender, receiver): IO<'_>,
         // rng: &dyn SecureRandom,
     ) -> Array1<bool> {
-        let z = masked_x - masked_y;
+        let z = &masked_x - &masked_y;
 
         info!("Z: {:#?}", z);
         // TODO I shouldn't write 0x7FFF manually
@@ -75,12 +78,16 @@ impl SignedComparisonKeys {
 
         // Evaluate the DDCF
         // TODO should be an actual implementation🤡
-        let m_shares = Array1::from_iter(
-            point
-                .into_iter()
-                .zip(&self.ddcf_keys.alpha)
-                .map(|(a, b)| a < *b),
-        ) ^ &self.ddcf_keys.invert;
+        let m_shares = if PARTY {
+            Array1::from_iter(
+                point
+                    .into_iter()
+                    .zip(&self.ddcf_keys.alpha)
+                    .map(|(a, b)| a < *b),
+            ) ^ &self.ddcf_keys.invert
+        } else {
+            Array1::from_elem(masked_x.len(), false)
+        };
         // let m_shares = (point < self.ddcf_keys.alpha) ^ self.ddcf.invert;
 
         // Finish the calculation

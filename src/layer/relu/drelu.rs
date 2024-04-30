@@ -50,11 +50,8 @@ pub async fn drelu<const PARTY: bool>(
     let key = if PARTY {
         // Sample random key
         // TODO use RandomConstructible
-        // let r_in_1 = com::sample(x_share.len(), rng);
-        // let r_in_2 = com::sample(x_share.len(), rng);
-
-        let r_in_1 = Array1::<Com>::zeros(x_share.len());
-        let r_in_2 = Array1::<Com>::zeros(x_share.len());
+        let r_in_1 = com::sample(x_share.len(), rng);
+        let r_in_2 = com::sample(x_share.len(), rng);
         let r_out = bit::sample(x_share.len(), rng);
 
         let r_in_1_shares = r_in_1.split(rng);
@@ -89,8 +86,6 @@ pub async fn drelu<const PARTY: bool>(
         }
     };
 
-    info!("DReLU Key: {:#?}", key);
-
     // NOTE the online stage starts here
     let masked_x_share = x_share + key.r_in_1_share;
 
@@ -98,10 +93,10 @@ pub async fn drelu<const PARTY: bool>(
         .reconstruct_mutually((sender, receiver))
         .await?;
 
-    let signed_comparison_keys = key
+    let comparison_result = key
         .signed_comparison_key
         .evaluate::<PARTY>(masked_x, key.r_in_2 /* , (sender, receiver), rng */)
         .await;
 
-    Ok(signed_comparison_keys ^ key.r_out_share ^ PARTY)
+    Ok(comparison_result ^ key.r_out_share ^ PARTY)
 }
