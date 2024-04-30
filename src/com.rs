@@ -2,14 +2,6 @@ use fixed::{FixedI16, Wrapping};
 use ndarray::{Array, Dimension, ShapeBuilder};
 use ring::rand::{self, SecureRandom};
 
-/// The number of bits used for the fractional part of the fixed-point number.
-const FRACTION_BITS: i16 = 4;
-
-/// The scaling factor used to convert between floating-point and fixed-point representations.
-/// This is calculated as 2^FRACTION_BITS, which is the maximum value that can be represented
-/// in the fractional part of the fixed-point number.
-const FRACTION: f32 = (1 << FRACTION_BITS) as f32;
-
 /// A fixed-point number that is used for communication (hence the name 'Com') and upon which cryptography is performed.
 /// The fixed-point number is represented using a 16-bit signed integer, with the number of bits used for the fractional part
 /// defined by the `FRACTION_BITS` constant.
@@ -20,13 +12,6 @@ pub type Com = Wrapping<FixedI16<4>>;
 #[deprecated]
 pub(crate) fn f32_to_com<D: Dimension>(a: Array<f32, D>) -> Array<Com, D> {
     a.mapv(Com::from_num)
-}
-
-/// Converts an array of `Com` values to an array of `f32` values.
-#[inline]
-#[deprecated]
-pub(crate) fn com_to_f32<D: Dimension>(a: Array<Com, D>) -> Array<f32, D> {
-    a.mapv(Com::to_num::<f32>)
 }
 
 pub(crate) fn sample<Sh: ShapeBuilder>(shape: Sh, rng: &dyn SecureRandom) -> Array<Com, Sh::Dim> {
