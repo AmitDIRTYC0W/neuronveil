@@ -7,7 +7,7 @@ use crate::{
     com::f32_to_com,
     message::{Message, IO},
     model::ModelShare,
-    reconstruct::{self, Reconstruct as _},
+    reconstruct::{Reconstruct as _},
     split::Split,
     unexpected_message_error::UnexpectedMessageError,
     Com,

@@ -1,6 +1,5 @@
 use std::error::Error;
 
-use log::info;
 use ndarray::Array1;
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};

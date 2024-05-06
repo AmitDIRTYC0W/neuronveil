@@ -1,5 +1,4 @@
 use crate::{bitxa, message::IO, split::Split, Com};
-use log::info;
 use ndarray::Array1;
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};

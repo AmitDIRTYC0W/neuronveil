@@ -1,6 +1,6 @@
 use std::{error::Error, ops::Add};
 
-use ndarray::{Array, ArrayBase, ArrayView, Dimension, RawData};
+use ndarray::{ArrayBase, Dimension, RawData};
 
 use crate::{
     message::{Message, IO},

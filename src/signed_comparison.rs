@@ -3,7 +3,6 @@ use crate::split::Split as _;
 use crate::Com;
 use fixed::traits::{Fixed, FixedBits};
 use fixed::Wrapping;
-use log::info;
 use ndarray::{Array, Array1, Dimension};
 use num_traits::One;
 use ring::rand::SecureRandom;

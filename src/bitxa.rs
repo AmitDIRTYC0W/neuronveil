@@ -4,7 +4,6 @@ use crate::message::IO;
 use crate::multiplication_triplet_share::MultiplicationTripletShare;
 use crate::reconstruct::Reconstruct;
 use crate::reconstruct::ReconstructOnline;
-use crate::unexpected_message_error::UnexpectedMessageError;
 use crate::Com;
 use log::debug;
 use ndarray::Array1;
