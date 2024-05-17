@@ -4,7 +4,6 @@ use ndarray::Array1;
 use ring::rand::SecureRandom;
 
 use crate::{
-    com::f32_to_com,
     message::{Message, IO},
     model::ModelShare,
     reconstruct::Reconstruct as _,
