@@ -87,7 +87,6 @@ async fn handle_connection(connection: Connection, model: Model) {
             let mut stream = connection_handle.open_send_stream().await.unwrap(); // TODO handle errors!
 
             let buffer = serde_json::to_vec(&message).unwrap().try_into().unwrap();
-            debug!("Attempting to send a message!");
 
             stream.send(buffer).await.expect("stream should be open");
             stream.close().await.unwrap();

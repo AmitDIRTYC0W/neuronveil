@@ -76,24 +76,5 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // FIXME this shouldn't be needed
     tokio::time::sleep(Duration::from_millis(100)).await;
 
-    // TODO remove this:
-    // ensure the connection doesn't time out with inactivity
-    // connection.keep_alive(true)?;
-
-    // open a new stream and split the receiving and sending sides
-    // let mut stream = connection.open_send_stream().await?;
-
-    // // spawn a task that copies responses from the server to stdout
-    // tokio::spawn(async move {
-    //     let mut stdout = tokio::io::stdout();
-    //     let _ = tokio::io::copy(&mut receive_stream, &mut stdout).await;
-    // });
-
-    // copy data from stdin and send it to the server
-    // let mut stdin = tokio::io::stdin();
-    // let mut reader: &[u8] = b"{}";
-    // tokio::io::copy(&mut reader, &mut stream).await?;
-    // stream.close().await?;
-
     Ok(())
 }
