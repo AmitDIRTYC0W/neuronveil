@@ -1,5 +1,5 @@
-mod dense_layer;
-pub(crate) mod relu;
+pub mod dense_layer;
+pub mod relu;
 
 use crate::{message::IO, split::Split, Com};
 use dense_layer::{DenseLayer, DenseLayerShare};
@@ -14,6 +14,15 @@ use std::error::Error;
 pub enum Layer {
     DenseLayer(DenseLayer),
     ReLULayer(ReLULayer), // TODO ReLULayer shouldn't be a type, just use a union like a union here
+}
+
+impl Layer {
+    pub fn infer_locally(&self, input: Array1<Com>) -> Array1<Com> {
+        match self {
+            Layer::DenseLayer(dense_layer) => dense_layer.infer_locally(input),
+            Layer::ReLULayer(relu_layer) => relu_layer.infer_locally(input),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

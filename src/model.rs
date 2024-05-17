@@ -13,7 +13,19 @@ use crate::{
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Model {
-    layers: Vec<Layer>,
+    pub layers: Vec<Layer>,
+}
+
+impl Model {
+    pub fn infer_locally(&self, input: Array1<Com>) -> Array1<Com> {
+        let mut activations = input;
+
+        for layer in &self.layers {
+            activations = layer.infer_locally(activations);
+        }
+
+        activations
+    }
 }
 
 #[derive(Default, Serialize, Deserialize, Debug)]

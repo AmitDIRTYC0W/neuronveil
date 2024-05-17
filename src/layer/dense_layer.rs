@@ -14,6 +14,12 @@ pub struct DenseLayer {
     biases: Array1<Com>,
 }
 
+impl DenseLayer {
+    pub fn infer_locally(&self, input: Array1<Com>) -> Array1<Com> {
+        &input.dot(&self.weights) + &self.biases
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DenseLayerShare {
     pub(self) weights_share: Array2<Com>,

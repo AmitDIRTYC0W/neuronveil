@@ -9,6 +9,12 @@ pub(crate) mod drelu;
 #[derive(Deserialize, Debug, Clone, Copy)]
 pub struct ReLULayer {}
 
+impl ReLULayer {
+    pub fn infer_locally(&self, input: Array1<Com>) -> Array1<Com> {
+        input.mapv(|x| if x > Com::ZERO { x } else { Com::ZERO })
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ReLULayerShare {}
 
