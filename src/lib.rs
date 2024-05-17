@@ -7,7 +7,7 @@ pub use com::Com; // TODO shouldn't be pub
 pub(crate) mod bit;
 mod bitxa;
 pub mod client;
-mod layer;
+pub mod layer;
 pub mod message;
 pub mod model;
 mod multiplication_triplet_share;
