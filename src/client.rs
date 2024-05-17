@@ -7,7 +7,7 @@ use crate::{
     com::f32_to_com,
     message::{Message, IO},
     model::ModelShare,
-    reconstruct::{Reconstruct as _},
+    reconstruct::Reconstruct as _,
     split::Split,
     unexpected_message_error::UnexpectedMessageError,
     Com,
@@ -35,7 +35,7 @@ pub async fn infer(
     rng: &dyn SecureRandom,
 ) -> Result<Array1<f32>, Box<dyn Error>> {
     // Convert the input from float to Com
-    let input_com = f32_to_com(input);
+    let input_com = input.mapv(Com::from_num);
 
     // Split the input into shares
     let input_shares = input_com.split(rng);
