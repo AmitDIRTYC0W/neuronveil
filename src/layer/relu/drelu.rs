@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use anyhow::bail;
+use anyhow::{bail, Context};
 use ndarray::Array1;
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
@@ -92,7 +92,8 @@ pub async fn drelu<const PARTY: bool>(
 
     let masked_x = DReLUInteraction { masked_x_share }
         .reconstruct_mutually((sender, receiver))
-        .await?;
+        .await
+        .context("DReLU internal reconstruction failed")?;
 
     let comparison_result = key
         .signed_comparison_key

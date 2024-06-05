@@ -1,6 +1,7 @@
 use std::any::Any;
 
 use anyhow::Context;
+use log::debug;
 use ndarray::Array1;
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
@@ -21,7 +22,8 @@ impl Model {
     pub fn infer_locally(&self, input: Array1<Com>) -> Array1<Com> {
         let mut activations = input;
 
-        for layer in &self.layers {
+        for (i, layer) in self.layers.iter().enumerate() {
+            debug!("Evaluating layer {}", i);
             activations = layer.infer_locally(activations);
         }
 

@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use anyhow::Context as _;
 use ndarray::Array1;
 use ring::rand::SecureRandom;
 
@@ -40,7 +41,8 @@ pub async fn infer(
     let output_share = model_shares
         .0
         .infer::<true>(input_share, (sender, receiver), rng)
-        .await?;
+        .await
+        .context("Failed to iterate over the model's layers")?;
 
     // Send the output share back to the client
     sender.send(Message::OutputShare(output_share)).await?;

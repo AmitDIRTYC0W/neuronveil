@@ -5,6 +5,7 @@ use crate::multiplication_triplet_share::MultiplicationTripletShare;
 use crate::reconstruct::Reconstruct;
 use crate::reconstruct::ReconstructOnline;
 use crate::Com;
+use anyhow::Context as _;
 use log::debug;
 use ndarray::Array1;
 use ndarray::Ix1;
@@ -84,7 +85,8 @@ pub async fn bitxa<const PARTY: bool>(
     let mt = MultiplicationTripletShare::<Ix1, Ix1>::new(x_share.len()); // TODO these should be generated in advance!
     let ef_share = mt
         .hadamard_product::<PARTY>(&e_share, &f_share, (sender, receiver))
-        .await?;
+        .await
+        .context("Failed to compute Hadamard product")?;
 
     let arithmatic_delta_y_share = &e_share + &f_share - (ef_share * 2);
 
@@ -104,7 +106,8 @@ pub async fn bitxa<const PARTY: bool>(
             &arithmatic_delta_y_share,
             (sender, receiver),
         )
-        .await?;
+        .await
+        .context("Failed to compute Hadamard product")?;
 
     debug!("delta z share: {:#}", delta_z_share);
 
@@ -116,7 +119,8 @@ pub async fn bitxa<const PARTY: bool>(
     };
     let capital_deltas = our_capital_delta_shares
         .reconstruct_mutually((sender, receiver))
-        .await?;
+        .await
+        .context("Failed to reconstruct Δx and Δy")?;
 
     // This is akin to Δ′y
     let arithmatic_capital_delta_y = capital_deltas.y.mapv(|b| {
