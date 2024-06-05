@@ -1,5 +1,6 @@
-use std::error::Error;
+use std::any::Any;
 
+use anyhow::Context;
 use ndarray::Array1;
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
@@ -39,13 +40,14 @@ impl ModelShare {
         input_share: Array1<Com>,
         (sender, receiver): IO<'_>,
         rng: &dyn SecureRandom,
-    ) -> Result<Array1<Com>, Box<dyn Error>> {
+    ) -> anyhow::Result<Array1<Com>> {
         let mut activations_share = input_share;
 
-        for layer_share in self.layer_shares.iter() {
+        for (i, layer_share) in self.layer_shares.iter().enumerate() {
             activations_share = layer_share
                 .infer::<PARTY>(activations_share, (sender, receiver), rng)
-                .await?;
+                .await
+                .with_context(|| format!("Failed to infer layer {}", i + 1))?;
         }
 
         Ok(activations_share)

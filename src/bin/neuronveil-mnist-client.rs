@@ -1,3 +1,4 @@
+use anyhow::Context;
 use clap::{command, Parser};
 use image::{imageops::FilterType, io::Reader as ImageReader, GrayImage};
 use log::debug;
@@ -28,7 +29,7 @@ struct Args {
     server_name: String,
 }
 
-fn load_image<P: AsRef<Path>>(filepath: P) -> Result<Array1<f32>, Box<dyn Error>> {
+fn load_image<P: AsRef<Path>>(filepath: P) -> anyhow::Result<Array1<f32>> {
     // Read the image
     let raw_image = ImageReader::open(filepath)?.decode()?;
 
@@ -46,7 +47,7 @@ async fn infer_online(
     input: Array1<f32>,
     server: SocketAddr,
     server_name: String,
-) -> Result<Array1<f32>, Box<dyn Error>> {
+) -> anyhow::Result<Array1<f32>> {
     // Connect to the server
     debug!("Attempting to connect to {}", server);
     let client = Client::builder()
@@ -110,7 +111,7 @@ async fn infer_online(
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> anyhow::Result<()> {
     // Start the logger
     flexi_logger::Logger::try_with_env()
         .unwrap()
@@ -119,7 +120,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let args = Args::parse();
 
-    let input = load_image(args.image)?;
+    let input = load_image(args.image).context("Failed to load the input image")?;
 
     let output = if let Some(model) = args.model {
         // Convert the input from float to Com
@@ -137,7 +138,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         output_com.mapv(Com::to_num::<f32>)
     } else {
         // Infer online, without knowing the model
-        infer_online(input, args.server, args.server_name).await?
+        infer_online(input, args.server, args.server_name)
+            .await
+            .context("Online inference failed")?
     };
 
     println!("Output: {:#}", output);

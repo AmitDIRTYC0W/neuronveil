@@ -17,7 +17,7 @@ use tokio::task;
 // }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> anyhow::Result<()> {
     // Start the logger
     flexi_logger::Logger::try_with_env()
         .unwrap()

@@ -17,9 +17,11 @@ pub trait ReconstructOnline: Reconstruct + TryFrom<Message> + Into<Message> + Cl
     async fn reconstruct_mutually(
         self,
         (sender, receiver): IO<'_>,
-    ) -> Result<Self::Reconstructed, Box<dyn Error>>
+    ) -> anyhow::Result<Self::Reconstructed>
     where
         <Self as TryFrom<Message>>::Error: 'static + Error,
+        <Self as TryFrom<Message>>::Error: Send,
+        <Self as TryFrom<Message>>::Error: Sync,
     {
         // Send our share to the adversary
         sender.send(self.clone().into()).await?;

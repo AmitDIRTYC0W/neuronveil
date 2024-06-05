@@ -1,8 +1,8 @@
 use crate::{bitxa, message::IO, split::Split, Com};
+use anyhow::Context;
 use ndarray::Array1;
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
-use std::error::Error;
 
 pub(crate) mod drelu;
 
@@ -24,10 +24,13 @@ impl ReLULayerShare {
         input_share: Array1<Com>,
         (sender, receiver): IO<'_>,
         rng: &dyn SecureRandom,
-    ) -> Result<Array1<Com>, Box<dyn Error>> {
-        let drelu_output_share =
-            drelu::drelu::<PARTY>(&input_share, (sender, receiver), rng).await?;
-        bitxa::<PARTY>(&input_share, &drelu_output_share, (sender, receiver), rng).await
+    ) -> anyhow::Result<Array1<Com>> {
+        let drelu_output_share = drelu::drelu::<PARTY>(&input_share, (sender, receiver), rng)
+            .await
+            .context("Failed to evaluate DReLU")?;
+        bitxa::<PARTY>(&input_share, &drelu_output_share, (sender, receiver), rng)
+            .await
+            .context("Failed to evaluate BitXA")
     }
 }
 

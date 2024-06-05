@@ -1,5 +1,4 @@
-use std::error::Error;
-
+use anyhow::bail;
 use ndarray::{Array, Array1, Array2, Dimension, Ix, Ix1, Ix2};
 
 use crate::{
@@ -32,7 +31,7 @@ impl MultiplicationTripletShare<Ix1, Ix1> {
         x_share: &Array1<Com>,
         y_share: &Array1<Com>,
         (sender, receiver): IO<'_>,
-    ) -> Result<Array1<Com>, Box<dyn Error>> {
+    ) -> anyhow::Result<Array1<Com>> {
         // 'Mask' x_share and y_share as e_share and f_share
         let our_ef_shares = HadamardProductInteraction {
             e_share: x_share - &self.a_share,
@@ -50,7 +49,7 @@ impl MultiplicationTripletShare<Ix1, Ix1> {
         if let Some(Message::HadamardProductInteraction(shares)) = receiver.recv().await {
             their_ef_shares = shares;
         } else {
-            return Err(Box::new(UnexpectedMessageError {}));
+            bail!(UnexpectedMessageError {});
         }
 
         // Reconstruct e and f
@@ -86,7 +85,7 @@ impl MultiplicationTripletShare<Ix1, Ix2> {
         x_share: &Array<Com, Ix1>,
         y_share: &Array<Com, Ix2>,
         (sender, receiver): IO<'_>,
-    ) -> Result<Array1<Com>, Box<dyn Error>> {
+    ) -> anyhow::Result<Array1<Com>> {
         // 'Mask' x_share and y_share as e_share and f_share
         let our_ef_shares = DotProductInteraction {
             e_share: x_share - &self.a_share,
@@ -103,7 +102,7 @@ impl MultiplicationTripletShare<Ix1, Ix2> {
         if let Some(Message::DotProductInteraction(shares)) = receiver.recv().await {
             their_ef_shares = shares;
         } else {
-            return Err(Box::new(UnexpectedMessageError {}));
+            bail!(UnexpectedMessageError {});
         }
 
         // Reconstruct e and f

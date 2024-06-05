@@ -1,5 +1,4 @@
-use std::error::Error;
-
+use anyhow::Context as _;
 use ndarray::{Array1, Array2, Ix1, Ix2};
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
@@ -31,7 +30,7 @@ impl DenseLayerShare {
         &self,
         input_share: Array1<Com>,
         (sender, receiver): IO<'_>,
-    ) -> Result<Array1<Com>, Box<dyn Error>> {
+    ) -> anyhow::Result<Array1<Com>> {
         // let mt =
         //     MultiplicationTripletShare::<Ix1, Ix2>::new(input_share.len(), self.biases_share.len());
         let mt = MultiplicationTripletShare::<Ix1, Ix2>::new(
@@ -40,7 +39,8 @@ impl DenseLayerShare {
         );
         let product = mt
             .dot_product::<PARTY>(&input_share, &self.weights_share, (sender, receiver))
-            .await?;
+            .await
+            .context("Failed to multiply the activations by the weights")?;
         Ok(product + &self.biases_share)
     }
 }

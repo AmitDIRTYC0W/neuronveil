@@ -1,5 +1,4 @@
-use std::error::Error;
-
+use anyhow::{bail, Context as _};
 use ndarray::Array1;
 use ring::rand::SecureRandom;
 
@@ -32,7 +31,7 @@ pub async fn infer(
     (sender, receiver): IO<'_>,
     input: Array1<f32>,
     rng: &dyn SecureRandom,
-) -> Result<Array1<f32>, Box<dyn Error>> {
+) -> anyhow::Result<Array1<f32>> {
     // Convert the input from float to Com
     let input_com = input.mapv(Com::from_num);
 
@@ -63,7 +62,7 @@ pub async fn infer_raw(
     (sender, receiver): IO<'_>,
     input_shares: (Array1<Com>, Array1<Com>),
     rng: &dyn SecureRandom,
-) -> Result<Array1<Com>, Box<dyn Error>> {
+) -> anyhow::Result<Array1<Com>> {
     // Send the server an input share
     sender.send(Message::InputShare(input_shares.1)).await?;
 
@@ -72,7 +71,7 @@ pub async fn infer_raw(
     if let Some(message) = receiver.recv().await {
         model_share_message = message;
     } else {
-        return Err(Box::new(UnexpectedMessageError {}));
+        bail!(UnexpectedMessageError {});
     }
 
     // Verify the message is indeed a model share
@@ -80,20 +79,21 @@ pub async fn infer_raw(
     if let Message::ModelShare(contents) = model_share_message {
         model_share = contents;
     } else {
-        return Err(Box::new(UnexpectedMessageError {}));
+        bail!(UnexpectedMessageError {});
     }
 
     // Infer the model
     let our_output_share = model_share
         .infer::<false>(input_shares.0, (sender, receiver), rng)
-        .await?;
+        .await
+        .context("Failed to iterate over the model's layers")?;
 
     // Wait for output share
     let output_share_message: Message;
     if let Some(message) = receiver.recv().await {
         output_share_message = message;
     } else {
-        return Err(Box::new(UnexpectedMessageError {}));
+        bail!(UnexpectedMessageError {});
     }
 
     // Verify the message is indeed an output share
@@ -101,7 +101,7 @@ pub async fn infer_raw(
     if let Message::OutputShare(contents) = output_share_message {
         their_output_share = contents;
     } else {
-        return Err(Box::new(UnexpectedMessageError {}));
+        bail!(UnexpectedMessageError {});
     }
 
     // Reconstruct the output

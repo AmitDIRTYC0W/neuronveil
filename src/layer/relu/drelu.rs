@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use anyhow::bail;
 use ndarray::Array1;
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
@@ -42,7 +43,7 @@ pub async fn drelu<const PARTY: bool>(
     x_share: &Array1<Com>,
     (sender, receiver): IO<'_>,
     rng: &dyn SecureRandom,
-) -> Result<Array1<bool>, Box<dyn Error>> {
+) -> anyhow::Result<Array1<bool>> {
     // Deal/receive DReLU keys
     // TODO technically, the signed comparison keys should also be here
     // but actually maybe it's better to do it with promises and such
@@ -82,7 +83,7 @@ pub async fn drelu<const PARTY: bool>(
         if let Some(Message::DReLUKey(our_key)) = receiver.recv().await {
             our_key
         } else {
-            return Err(Box::new(UnexpectedMessageError {}));
+            bail!(UnexpectedMessageError {});
         }
     };
 

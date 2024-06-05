@@ -11,7 +11,6 @@ use ndarray::Ix1;
 use ring::rand::SecureRandom;
 use serde::Deserialize;
 use serde::Serialize;
-use std::error::Error;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BitXAInteraction {
@@ -60,7 +59,7 @@ pub async fn bitxa<const PARTY: bool>(
     y_share: &Array1<bool>,
     (sender, receiver): IO<'_>,
     rng: &dyn SecureRandom,
-) -> Result<Array1<Com>, Box<dyn Error>> {
+) -> anyhow::Result<Array1<Com>> {
     let masked_boolean_delta_y_share = bit::sample(x_share.len(), rng);
 
     let masked_arithmatic_delta_y_share = masked_boolean_delta_y_share.mapv(|b| {

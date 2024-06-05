@@ -38,7 +38,7 @@ impl LayerShare {
         input_share: Array1<Com>,
         (sender, receiver): IO<'_>,
         rng: &dyn SecureRandom,
-    ) -> Result<Array1<Com>, Box<dyn Error>> {
+    ) -> anyhow::Result<Array1<Com>> {
         match self {
             LayerShare::DenseLayerShare(dense_layer_share) => {
                 dense_layer_share

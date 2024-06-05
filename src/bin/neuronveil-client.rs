@@ -3,11 +3,11 @@ use ndarray::array;
 use neuronveil::message::Message;
 use ring::rand::{SecureRandom, SystemRandom};
 use s2n_quic::{client::Connect, Client};
-use std::{error::Error, net::SocketAddr, path::Path, sync::Arc, time::Duration};
+use std::{net::SocketAddr, path::Path, sync::Arc, time::Duration};
 use tokio::sync::mpsc;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> anyhow::Result<()> {
     // Start the logger
     flexi_logger::Logger::try_with_env()
         .unwrap()
