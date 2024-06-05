@@ -5,8 +5,10 @@ edition = "2021"
 
 [dependencies]
 bitvec = "1.0.1"
+clap = { version = "4.5.4", features = ["derive"] }
 fixed = { git = "https://github.com/AmitDIRTYC0W/fixed.git", features = ["num-traits", "serde"] }
 flexi_logger = "0.28.0"
+image = "0.25.1"
 log = "0.4.21"
 ndarray = { git = "https://github.com/AmitDIRTYC0W/ndarray.git", features = ["serde"] }
 num-traits = "0.2.18"
