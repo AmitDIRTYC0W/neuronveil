@@ -15,3 +15,6 @@ pub mod server;
 pub(crate) use bitxa::bitxa;
 pub(crate) mod reconstruct;
 pub(crate) mod signed_comparison;
+
+#[cfg(feature = "utils")]
+pub mod utils;
