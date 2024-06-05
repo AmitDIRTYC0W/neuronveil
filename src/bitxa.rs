@@ -42,7 +42,18 @@ pub struct CapitalDeltas {
 /// Directly multiply a bit by an integer.
 ///
 /// This is a vectorised implementation of Algorithm no. 1 from
-// [FssNN: Communication-Efficient Secure Neural Network Training via Function Secret Sharing](https://eprint.iacr.org/2023/073.pdf).
+/// [FssNN: Communication-Efficient Secure Neural Network Training via Function Secret Sharing](https://eprint.iacr.org/2023/073.pdf).
+///
+/// # Arguments
+///
+/// - `x_share`: Arithmatic values share
+/// - `y_share`: Boolean values share
+/// - `(sender, receiver)`: A sender and a receiver for asynchronous communication with the server. Messages may arrive out-of-order.
+/// - `rng`: A secure random number generator for secure computation.
+///
+/// # Returns
+///
+/// A share of the product of x and y
 // FIXME this function is long
 pub async fn bitxa<const PARTY: bool>(
     x_share: &Array1<Com>,
@@ -78,12 +89,7 @@ pub async fn bitxa<const PARTY: bool>(
 
     let arithmatic_delta_y_share = &e_share + &f_share - (ef_share * 2);
 
-    // info!(
-    //     "masked boolean delta y share: {:?}",
-    //     masked_boolean_delta_y_share
-    // );
-    // FIXME this shouldn't be necessary
-    // BUG it might not be secure
+    // FIXME BUG this shouldn't be necessary
     let delta_x_share = com::sample(x_share.len(), rng) / 256;
     debug!("delta x share: {:#}", delta_x_share);
     debug!(
@@ -128,9 +134,6 @@ pub async fn bitxa<const PARTY: bool>(
     let without_bt = &delta_z_share * (&arithmatic_capital_delta_y * 2) - &delta_z_share
         + &arithmatic_delta_y_share * (&capital_deltas.x - &t * 2)
         - &arithmatic_capital_delta_y * &delta_x_share;
-    // let without_bt = com::adjust_product(
-    //     &arithmatic_delta_y_share * (&capital_delta_x - &t * Com(Wrapping(2)))
-    //         - &arithmatic_capital_delta_y * (&delta_x_share + &delta_z_share * Com(Wrapping(2))),
-    // ) - &delta_z_share;
+
     Ok(if PARTY { t + without_bt } else { without_bt })
 }

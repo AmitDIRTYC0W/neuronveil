@@ -49,6 +49,7 @@ pub async fn drelu<const PARTY: bool>(
     let key = if PARTY {
         // Sample random key
         // TODO use RandomConstructible
+        // BUG This destroys the results, they are consistent when I use zeros
         let r_in_1 = com::sample(x_share.len(), rng);
         let r_in_2 = com::sample(x_share.len(), rng);
         let r_out = bit::sample(x_share.len(), rng);
