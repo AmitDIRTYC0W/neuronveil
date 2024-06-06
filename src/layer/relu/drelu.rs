@@ -1,4 +1,3 @@
-use std::error::Error;
 
 use anyhow::{bail, Context};
 use ndarray::Array1;
@@ -6,7 +5,7 @@ use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    bit, com,
+    bit,
     message::{Message, SignedComparisonKeys, IO},
     reconstruct::{Reconstruct, ReconstructOnline},
     signed_comparison::generate_signed_comparison_keys,

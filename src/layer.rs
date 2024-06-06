@@ -7,7 +7,6 @@ use ndarray::Array1;
 use relu::{ReLULayer, ReLULayerShare};
 use ring::rand::SecureRandom;
 use serde::{Deserialize, Serialize};
-use std::error::Error;
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type")]

@@ -1,4 +1,4 @@
-use std::{error::Error, fs::File, io::BufReader, path::Path};
+use std::{fs::File, io::BufReader, path::Path};
 
 use flexi_logger;
 use log::debug;

@@ -1,5 +1,5 @@
-use fixed::{FixedI16, FixedI32, Wrapping};
-use ndarray::{Array, Dimension, ShapeBuilder};
+use fixed::{FixedI32, Wrapping};
+use ndarray::{Array, ShapeBuilder};
 use ring::rand::{self, SecureRandom};
 
 /// A fixed-point number that is used for communication (hence the name 'Com') and upon which cryptography is performed.
