@@ -143,7 +143,10 @@ async fn main() -> anyhow::Result<()> {
             .context("Online inference failed")?
     };
 
-    println!("Output: {:#}", output);
+    println!(
+        "Output: {:#}",
+        neuronveil::utils::softmax(&output.view()).unwrap()
+    );
 
     // // FIXME this shouldn't be needed
     // tokio::time::sleep(Duration::from_millis(100)).await;
