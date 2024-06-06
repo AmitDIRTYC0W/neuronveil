@@ -1,4 +1,3 @@
-
 use anyhow::{bail, Context};
 use ndarray::Array1;
 use ring::rand::SecureRandom;
